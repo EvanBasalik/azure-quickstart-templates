@@ -94,9 +94,9 @@
     "publicIPAddressName": {
       "type": "string",
       "metadata": {
-        "description": "The name of the public IP address used by the DC Load Balancer"
+        "description": "The name of the public IP address used by the Load Balancer"
       },
-      "defaultValue": "adpublicIP"
+      "defaultValue": "publicIP"
     },
     "publicIPAddressType": {
       "type": "string",
@@ -105,9 +105,9 @@
         "Static"
       ],
       "metadata": {
-        "description": "The type of the public IP address used by the DC Load Balancer"
+        "description": "The type of the public IP address used by the Load Balancer"
       },
-      "defaultValue": "Dynamic"
+      "defaultValue": "Static"
     },
     "adPDCVMName": {
       "type": "string",
@@ -202,13 +202,15 @@
       "type": "string",
       "metadata": {
         "description": "The FQDN of the AD Domain created "
-      }
+      },
+      "defaultValue": "corpeotd.info"
     },
     "dnsPrefix": {
       "type": "string",
       "metadata": {
         "description": "The DNS prefix for the public IP address used by the Load Balancer"
-      }
+      },
+      "defaultValue": "corpeotd"
     },
     "pdcRDPPort": {
       "type": "int",
@@ -224,12 +226,19 @@
       },
       "defaultValue": 13389
     },
-              "adfsServerNamingConvention": {
-            "type": "string",
-            "minLength": 1,
-            "metadata": {
-                "description": "Naming convention for ADFS nodes. For example, input 'ADFS' if you want them to be named ADFS1, ADFS2"
-            }
+    "ADFSRDPPort": {
+      "type": "int",
+      "metadata": {
+        "description": "The public RDP port for the first ADFS instance. Successive instances will be iterated by 1"
+      },
+      "defaultValue": 5000
+    },
+      "adfsServerNamingConvention": {
+      "type": "string",
+      "minLength": 1,
+      "metadata": {
+      "description": "Naming convention for ADFS nodes. For example, input 'ADFS' if you want them to be named ADFS1, ADFS2"
+    }
         },
     "adfsVMSize": {
       "type": "string",
@@ -287,22 +296,23 @@
     }
   },
   "variables": {
-    "adLBFE": "LBFE",
-    "adLBBE": "LBBE",
-    "adPDCRDPNAT": "adPDCRDP",
-    "adBDCRDPNAT": "adBDCRDP",
+    "LBFE": "LBFE",
+    "LBBE": "LBBE",
+    "PDCRDPNAT": "PDCRDP",
+    "BDCRDPNAT": "BDCRDP",
+    "ADFSRDPNAT": "ADFSRDP",
     "VnetID": "[resourceId('Microsoft.Network/virtualNetworks', parameters('virtualNetworkName'))]",
     "internalSubnetRef": "[concat(variables('VnetID'),'/subnets/',parameters('internalSubnetName'))]",
-    "adPDCNicId": "[resourceId('Microsoft.Network/networkInterfaces',parameters('adPDCNicName'))]",
-    "adPDCIPConfigID": "[concat(variables('adPDCNicId'),'/ipConfigurations/ipconfig1')]",
-    "adBDCNicId": "[resourceId('Microsoft.Network/networkInterfaces',parameters('adBDCNicName'))]",
-    "adBDCIPConfigID": "[concat(variables('adBDCNicId'),'/ipConfigurations/ipconfig1')]",
+    "PDCNicId": "[resourceId('Microsoft.Network/networkInterfaces',parameters('adPDCNicName'))]",
+    "PDCIPConfigID": "[concat(variables('PDCNicId'),'/ipConfigurations/ipconfig1')]",
+    "BDCNicId": "[resourceId('Microsoft.Network/networkInterfaces',parameters('adBDCNicName'))]",
+    "BDCIPConfigID": "[concat(variables('BDCNicId'),'/ipConfigurations/ipconfig1')]",
     "adLBName": "dc-LoadBalancer",
     "adlbID": "[resourceId('Microsoft.Network/loadBalancers',variables('adLBName'))]",
-    "adlbFEConfigID": "[concat(variables('adlbID'),'/frontendIPConfigurations/',variables('adLBFE'))]",
-    "adPDCRDPNATRuleID": "[concat(variables('adlbID'),'/inboundNatRules/',variables('adPDCRDPNAT'))]",
-    "adBDCRDPNATRuleID": "[concat(variables('adlbID'),'/inboundNatRules/',variables('adBDCRDPNAT'))]",
-    "adBEAddressPoolID": "[concat(variables('adlbID'),'/backendAddressPools/',variables('adLBBE'))]",
+    "lbFEConfigID": "[concat(variables('adlbID'),'/frontendIPConfigurations/',variables('LBFE'))]",
+    "PDCRDPNATRuleID": "[concat(variables('adlbID'),'/inboundNatRules/',variables('PDCRDPNAT'))]",
+    "BDCRDPNATRuleID": "[concat(variables('adlbID'),'/inboundNatRules/',variables('BDCRDPNAT'))]",
+    "BEAddressPoolID": "[concat(variables('adlbID'),'/backendAddressPools/',variables('LBBE'))]",
     "adPDCDataDisk": "ADPDCDataDisk",
     "adBDCDataDisk": "ADBDCDataDisk",
     "adDataDiskSize": 1000,
@@ -342,6 +352,18 @@
       }
     },
     {
+      "name": "adfs-availabilityset",
+      "type": "Microsoft.Compute/availabilitySets",
+      "apiVersion": "2016-03-30",
+      "location": "[resourceGroup().location]"
+    },
+        {
+      "name": "wap-availabilityset",
+      "type": "Microsoft.Compute/availabilitySets",
+      "apiVersion": "2016-03-30",
+      "location": "[resourceGroup().location]"
+    },
+        {
       "name": "dc-availabilityset",
       "type": "Microsoft.Compute/availabilitySets",
       "apiVersion": "2016-03-30",
@@ -390,7 +412,7 @@
       "properties": {
         "frontendIPConfigurations": [
           {
-            "name": "[variables('adLBFE')]",
+            "name": "[variables('LBFE')]",
             "properties": {
               "publicIPAddress": {
                 "id": "[resourceId('Microsoft.Network/publicIPAddresses',parameters('publicIPAddressName'))]"
@@ -400,15 +422,15 @@
         ],
         "backendAddressPools": [
           {
-            "name": "[variables('adLBBE')]"
+            "name": "[variables('LBBE')]"
           }
         ],
         "inboundNatRules": [
           {
-            "name": "[variables('adPDCRDPNAT')]",
+            "name": "[variables('PDCRDPNAT')]",
             "properties": {
               "frontendIPConfiguration": {
-                "id": "[variables('adlbFEConfigID')]"
+                "id": "[variables('lbFEConfigID')]"
               },
               "protocol": "tcp",
               "frontendPort": "[parameters('pdcRDPPort')]",
@@ -417,13 +439,26 @@
             }
           },
           {
-            "name": "[variables('adBDCRDPNAT')]",
+            "name": "[variables('BDCRDPNAT')]",
             "properties": {
               "frontendIPConfiguration": {
-                "id": "[variables('adlbFEConfigID')]"
+                "id": "[variables('lbFEConfigID')]"
               },
               "protocol": "tcp",
               "frontendPort": "[parameters('bdcRDPPort')]",
+              "backendPort": 3389,
+              "enableFloatingIP": false
+            }
+          },
+          {
+            "name": "[variables('ADFSRDPNAT')[copyIndex()]]",
+            "copy":2,
+            "properties": {
+              "frontendIPConfiguration": {
+                "id": "[variables('lbFEConfigID')]"
+              },
+              "protocol": "tcp",
+              "frontendPort": "[add(parameters('ADFSRDPPort'),copyIndex(-1))]",
               "backendPort": 3389,
               "enableFloatingIP": false
             }
@@ -452,12 +487,12 @@
               },
               "loadBalancerBackendAddressPools": [
                 {
-                  "id": "[variables('adBEAddressPoolID')]"
+                  "id": "[variables('BEAddressPoolID')]"
                 }
               ],
               "loadBalancerInboundNatRules": [
                 {
-                  "id": "[variables('adPDCRDPNATRuleID')]"
+                  "id": "[variables('PDCRDPNATRuleID')]"
                 }
               ]
             }
@@ -486,12 +521,12 @@
               },
               "loadBalancerBackendAddressPools": [
                 {
-                  "id": "[variables('adBEAddressPoolID')]"
+                  "id": "[variables('BEAddressPoolID')]"
                 }
               ],
               "loadBalancerInboundNatRules": [
                 {
-                  "id": "[variables('adBDCRDPNATRuleID')]"
+                  "id": "[variables('BDCRDPNATRuleID')]"
                 }
               ]
             }
@@ -704,12 +739,12 @@
                   },
                   "loadBalancerBackendAddressPools": [
                     {
-                      "id": "[variables('adBEAddressPoolID')]"
+                      "id": "[variables('BEAddressPoolID')]"
                     }
                   ],
                   "loadBalancerInboundNatRules": [
                     {
-                      "id": "[variables('adBDCRDPNATRuleID')]"
+                      "id": "[variables('BDCRDPNATRuleID')]"
                     }
                   ]
                 }

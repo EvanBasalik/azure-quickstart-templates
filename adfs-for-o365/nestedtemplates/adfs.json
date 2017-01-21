@@ -217,7 +217,6 @@
         "hardwareProfile": {
           "vmSize": "[parameters('adfsVMSize')]"
         },
-        "publicIPAllocationMethod":"Dynamic",
         "osProfile": {
           "computerName": "[concat(parameters('adfsServerNamingConvention'),copyIndex())]",
           "adminUsername": "[parameters('adminUsername')]",
