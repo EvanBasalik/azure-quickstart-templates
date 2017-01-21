@@ -305,8 +305,6 @@
     }
   },
   "variables": {
-    "adLBFE": "LBFE",
-    "adLBBE": "LBBE",
     "adPDCRDPNAT": "adPDCRDP",
     "adBDCRDPNAT": "adBDCRDP",
     "VnetID": "[resourceId('Microsoft.Network/virtualNetworks', parameters('virtualNetworkName'))]",
@@ -316,10 +314,10 @@
     "adBDCNicId": "[resourceId('Microsoft.Network/networkInterfaces',parameters('adBDCNicName'))]",
     "adBDCIPConfigID": "[concat(variables('adBDCNicId'),'/ipConfigurations/ipconfig1')]",
     "adlbID": "[resourceId('Microsoft.Network/loadBalancers',variables('adLBName'))]",
-    "adlbFEConfigID": "[concat(variables('adlbID'),'/frontendIPConfigurations/',variables('adLBFE'))]",
+    "adlbFEConfigID": "[concat(variables('adlbID'),'/frontendIPConfigurations/',variables('LBFE'))]",
     "adPDCRDPNATRuleID": "[concat(variables('adlbID'),'/inboundNatRules/',variables('adPDCRDPNAT'))]",
     "adBDCRDPNATRuleID": "[concat(variables('adlbID'),'/inboundNatRules/',variables('adBDCRDPNAT'))]",
-    "adBEAddressPoolID": "[concat(variables('adlbID'),'/backendAddressPools/',variables('adLBBE'))]",
+    "adBEAddressPoolID": "[concat(variables('adlbID'),'/backendAddressPools/',variables('LBBE'))]",
     "adPDCDataDisk": "ADPDCDataDisk",
     "adBDCDataDisk": "ADBDCDataDisk",
     "adDataDiskSize": 1000,
@@ -333,18 +331,18 @@
     "adBDCPreparationFunction": "PrepareADBDC.ps1\\PrepareADBDC",
     "adBDCConfigurationModulesURL": "[concat(parameters('assetLocation'),'/DSC/ConfigureADBDC.ps1.zip')]",
     "adBDCConfigurationFunction": "ConfigureADBDC.ps1\\ConfigureADBDC",
-
+    "dc-AvailabilitySetName": "dc-AvailabilitySet",
+    "adfs-AvailabilitySetName": "adfs-AvailabilitySet",
+    "wap-AvailabilitySetName": "wap-AvailabilitySet",
     "LBFE": "LBFE",
     "LBBE": "LBBE",
     "PDCRDPNAT": "PDCRDP",
     "BDCRDPNAT": "BDCRDP",
     "ADFSRDPNAT": "ADFSRDP",
     "internalSubnetRef": "[concat(variables('VnetID'),'/subnets/',parameters('internalSubnetName'))]",
-    "adLBName": "dc-LoadBalancer",
-    "lbFEConfigID": "[concat(variables('adlbID'),'/frontendIPConfigurations/',variables('LBFE'))]",
+    "adLBName": "RDPLoadBalancer",
     "PDCRDPNATRuleID": "[concat(variables('adlbID'),'/inboundNatRules/',variables('PDCRDPNAT'))]",
     "BDCRDPNATRuleID": "[concat(variables('adlbID'),'/inboundNatRules/',variables('BDCRDPNAT'))]",
-    "BEAddressPoolID": "[concat(variables('adlbID'),'/backendAddressPools/',variables('LBBE'))]",
     "adfsTemplateUri": "[concat(parameters('assetLocation'),'/nestedtemplates/adfs.json')]"
   },
   "resources": [
@@ -371,7 +369,19 @@
       }
     },
     {
-      "name": "[parameters('adAvailabilitySetName')]",
+      "name": "[variables('dc-AvailabilitySetName')]",
+      "type": "Microsoft.Compute/availabilitySets",
+      "apiVersion": "2016-03-30",
+      "location": "[resourceGroup().location]"
+    },
+   {
+      "name": "[variables('wap-AvailabilitySetName')]",
+      "type": "Microsoft.Compute/availabilitySets",
+      "apiVersion": "2016-03-30",
+      "location": "[resourceGroup().location]"
+    },
+    {
+      "name": "[variables('adfs-AvailabilitySetName')]",
       "type": "Microsoft.Compute/availabilitySets",
       "apiVersion": "2016-03-30",
       "location": "[resourceGroup().location]"
@@ -413,7 +423,7 @@
       "properties": {
         "frontendIPConfigurations": [
           {
-            "name": "[variables('adLBFE')]",
+            "name": "[variables('LBFE')]",
             "properties": {
               "publicIPAddress": {
                 "id": "[resourceId('Microsoft.Network/publicIPAddresses',parameters('publicIPAddressName'))]"
@@ -423,7 +433,7 @@
         ],
         "backendAddressPools": [
           {
-            "name": "[variables('adLBBE')]"
+            "name": "[variables('LBBE')]"
           }
         ],
         "inboundNatRules": [
