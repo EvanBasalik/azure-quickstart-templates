@@ -222,7 +222,7 @@
       "metadata": {
         "description": "The location of resources such as templates and DSC modules that the script is dependent"
       },
-      "defaultValue": "https://github.com/EvanBasalik/azure-quickstart-templates/master/adfs-for-o365"
+      "defaultValue": "https://raw.githubusercontent.com/EvanBasalik/azure-quickstart-templates/master/adfs-for-o365"
     }
   },
   "variables": {
