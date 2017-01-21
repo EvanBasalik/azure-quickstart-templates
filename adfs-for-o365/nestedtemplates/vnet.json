@@ -15,18 +15,33 @@
       },
       "defaultValue": "10.0.0.0/16"
     },
-    "subnetName": {
+    "internalsubnetName": {
       "type": "string",
       "metadata": {
-        "Description": "The name of the subnet created in the new VNET"
-      }
+        "Description": "The name of the internal subnet"
+      },
+      "defaultValue": "internal"
     },
-    "subnetRange": {
+    "internalsubnetRange": {
       "type": "string",
       "metadata": {
-        "Description": "The address range of the subnet created in the new VNET"
+        "Description": "The address range of the internal subnet"
       },
       "defaultValue": "10.0.0.0/24"
+    },
+    "dmzsubnetName": {
+      "type": "string",
+      "metadata": {
+        "Description": "The name of the DMZ subnet"
+      },
+      "defaultValue": "dmzsubnet"
+    },
+    "dmzsubnetRange": {
+      "type": "string",
+      "metadata": {
+        "Description": "The address range of the DMZ subnet"
+      },
+      "defaultValue": "10.0.0.0/30"
     }
   },
   "resources": [
@@ -43,11 +58,17 @@
         },
         "subnets": [
           {
-            "name": "[parameters('subnetName')]",
+            "name": "[parameters('internalsubnetName')]",
             "properties": {
-              "addressPrefix": "[parameters('subnetRange')]"
+              "addressPrefix": "[parameters('internalsubnetRange')]"
             }
-          }
+          },
+           {
+            "name": "[parameters('dmzsubnetName')]",
+            "properties": {
+              "addressPrefix": "[parameters('dmzsubnetRange')]"
+            }
+           }
         ]
       }
     }
