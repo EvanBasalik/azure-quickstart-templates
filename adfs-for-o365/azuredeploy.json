@@ -315,7 +315,6 @@
     "adPDCIPConfigID": "[concat(variables('adPDCNicId'),'/ipConfigurations/ipconfig1')]",
     "adBDCNicId": "[resourceId('Microsoft.Network/networkInterfaces',parameters('adBDCNicName'))]",
     "adBDCIPConfigID": "[concat(variables('adBDCNicId'),'/ipConfigurations/ipconfig1')]",
-    "adLBName": "adLoadBalancer",
     "adlbID": "[resourceId('Microsoft.Network/loadBalancers',variables('adLBName'))]",
     "adlbFEConfigID": "[concat(variables('adlbID'),'/frontendIPConfigurations/',variables('adLBFE'))]",
     "adPDCRDPNATRuleID": "[concat(variables('adlbID'),'/inboundNatRules/',variables('adPDCRDPNAT'))]",
@@ -333,7 +332,20 @@
     "adBDCPreparationModulesURL": "[concat(parameters('assetLocation'),'/DSC/PrepareADBDC.ps1.zip')]",
     "adBDCPreparationFunction": "PrepareADBDC.ps1\\PrepareADBDC",
     "adBDCConfigurationModulesURL": "[concat(parameters('assetLocation'),'/DSC/ConfigureADBDC.ps1.zip')]",
-    "adBDCConfigurationFunction": "ConfigureADBDC.ps1\\ConfigureADBDC"
+    "adBDCConfigurationFunction": "ConfigureADBDC.ps1\\ConfigureADBDC",
+
+    "LBFE": "LBFE",
+    "LBBE": "LBBE",
+    "PDCRDPNAT": "PDCRDP",
+    "BDCRDPNAT": "BDCRDP",
+    "ADFSRDPNAT": "ADFSRDP",
+    "internalSubnetRef": "[concat(variables('VnetID'),'/subnets/',parameters('internalSubnetName'))]",
+    "adLBName": "dc-LoadBalancer",
+    "lbFEConfigID": "[concat(variables('adlbID'),'/frontendIPConfigurations/',variables('LBFE'))]",
+    "PDCRDPNATRuleID": "[concat(variables('adlbID'),'/inboundNatRules/',variables('PDCRDPNAT'))]",
+    "BDCRDPNATRuleID": "[concat(variables('adlbID'),'/inboundNatRules/',variables('BDCRDPNAT'))]",
+    "BEAddressPoolID": "[concat(variables('adlbID'),'/backendAddressPools/',variables('LBBE'))]",
+    "adfsTemplateUri": "[concat(parameters('assetLocation'),'/nestedtemplates/adfs.json')]"
   },
   "resources": [
     {
