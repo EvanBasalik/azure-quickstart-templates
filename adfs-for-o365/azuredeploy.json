@@ -35,33 +35,19 @@
       },
       "defaultValue": "10.0.0.0/16"
     },
-    "internalsubnetName": {
+    "adSubnetName": {
       "type": "string",
       "metadata": {
-        "Description": "The name of the internal subnet"
+        "description": "The name of the subnet created in the new VNET"
       },
-      "defaultValue": "internal"
+      "defaultValue": "adSubnet"
     },
-    "internalsubnetRange": {
+    "adSubnet": {
       "type": "string",
       "metadata": {
-        "Description": "The address range of the internal subnet"
+        "description": "The address range of the subnet created in the new VNET"
       },
       "defaultValue": "10.0.0.0/24"
-    },
-    "dmzsubnetName": {
-      "type": "string",
-      "metadata": {
-        "Description": "The name of the DMZ subnet"
-      },
-      "defaultValue": "dmzsubnet"
-    },
-    "dmzsubnetRange": {
-      "type": "string",
-      "metadata": {
-        "Description": "The address range of the subnet for the DMZ"
-      },
-      "defaultValue": "10.0.0.0/30"
     },
     "adPDCNicName": {
       "type": "string",
@@ -96,7 +82,7 @@
       "metadata": {
         "description": "The name of the public IP address used by the Load Balancer"
       },
-      "defaultValue": "publicIP"
+      "defaultValue": "adpublicIP"
     },
     "publicIPAddressType": {
       "type": "string",
@@ -107,7 +93,7 @@
       "metadata": {
         "description": "The type of the public IP address used by the Load Balancer"
       },
-      "defaultValue": "Static"
+      "defaultValue": "Dynamic"
     },
     "adPDCVMName": {
       "type": "string",
@@ -198,19 +184,24 @@
         "description": "Image SKU"
       }
     },
+    "adAvailabilitySetName": {
+      "type": "string",
+      "metadata": {
+        "description": "The name of the availability set that the AD VM is created in"
+      },
+      "defaultValue": "adAvailabiltySet"
+    },
     "domainName": {
       "type": "string",
       "metadata": {
         "description": "The FQDN of the AD Domain created "
-      },
-      "defaultValue": "corpeotd.info"
+      }
     },
     "dnsPrefix": {
       "type": "string",
       "metadata": {
         "description": "The DNS prefix for the public IP address used by the Load Balancer"
-      },
-      "defaultValue": "corpeotd"
+      }
     },
     "pdcRDPPort": {
       "type": "int",
@@ -226,90 +217,31 @@
       },
       "defaultValue": 13389
     },
-    "ADFSRDPPort": {
-      "type": "int",
-      "metadata": {
-        "description": "The public RDP port for the first ADFS instance. Successive instances will be iterated by 1"
-      },
-      "defaultValue": 5000
-    },
-      "adfsServerNamingConvention": {
-      "type": "string",
-      "minLength": 1,
-      "metadata": {
-      "description": "Naming convention for ADFS nodes. For example, input 'ADFS' if you want them to be named ADFS1, ADFS2"
-    },
-    "defaultValue": "ADFS"
-        },
-    "adfsVMSize": {
-      "type": "string",
-      "allowedValues": [
-        "Standard_D1",
-        "Standard_DS1",
-        "Standard_D2",
-        "Standard_DS2",
-        "Standard_D3",
-        "Standard_DS3",
-        "Standard_D4",
-        "Standard_DS4",
-        "Standard_D11",
-        "Standard_DS11",
-        "Standard_D12",
-        "Standard_DS12",
-        "Standard_D13",
-        "Standard_DS13",
-        "Standard_D14",
-        "Standard_DS14",
-        "Standard_D1_v2",
-        "Standard_DS1_v2",
-        "Standard_D2_v2",
-        "Standard_DS2_v2",
-        "Standard_D3_v2",
-        "Standard_DS3_v2",
-        "Standard_D4_v2",
-        "Standard_DS4_v2",
-        "Standard_D11_v2",
-        "Standard_DS11_v2",
-        "Standard_D12_v2",
-        "Standard_DS12_v2",
-        "Standard_D13_v2",
-        "Standard_DS13_v2",
-        "Standard_D14_v2",
-        "Standard_DS14_v2"
-      ],
-      "metadata": {
-        "description": "The size of the ADFS VMs created"
-      },
-      "defaultValue": "Standard_DS2_v2"
-      },
-    "domainJoinOptions": {
-      "type": "int",
-      "defaultValue": 3,
-      "metadata": {
-        "description": "Set of bit flags that define the join options. Default value of 3 is a combination of NETSETUP_JOIN_DOMAIN (0x00000001) & NETSETUP_ACCT_CREATE (0x00000002) i.e. will join the domain and create the account on the domain. For more information see https://msdn.microsoft.com/en-us/library/aa392154(v=vs.85).aspx"}
-        },
     "assetLocation": {
       "type": "string",
       "metadata": {
         "description": "The location of resources such as templates and DSC modules that the script is dependent"
       },
-      "defaultValue": "https://github.com/EvanBasalik/azure-quickstart-templates/tree/master/adfs-for-o365"
+      "defaultValue": "https://raw.githubusercontent.com/Azure/azure-quickstart-templates/master/active-directory-new-domain-ha-2-dc"
     }
   },
   "variables": {
-    "LBFE": "LBFE",
-    "LBBE": "LBBE",
-    "PDCRDPNAT": "PDCRDP",
-    "BDCRDPNAT": "BDCRDP",
-    "ADFSRDPNAT": "ADFSRDP",
+    "adLBFE": "LBFE",
+    "adLBBE": "LBBE",
+    "adPDCRDPNAT": "adPDCRDP",
+    "adBDCRDPNAT": "adBDCRDP",
     "VnetID": "[resourceId('Microsoft.Network/virtualNetworks', parameters('virtualNetworkName'))]",
-    "internalSubnetRef": "[concat(variables('VnetID'),'/subnets/',parameters('internalSubnetName'))]",
-    "adLBName": "dc-LoadBalancer",
+    "adSubnetRef": "[concat(variables('VnetID'),'/subnets/',parameters('adSubnetName'))]",
+    "adPDCNicId": "[resourceId('Microsoft.Network/networkInterfaces',parameters('adPDCNicName'))]",
+    "adPDCIPConfigID": "[concat(variables('adPDCNicId'),'/ipConfigurations/ipconfig1')]",
+    "adBDCNicId": "[resourceId('Microsoft.Network/networkInterfaces',parameters('adBDCNicName'))]",
+    "adBDCIPConfigID": "[concat(variables('adBDCNicId'),'/ipConfigurations/ipconfig1')]",
+    "adLBName": "adLoadBalancer",
     "adlbID": "[resourceId('Microsoft.Network/loadBalancers',variables('adLBName'))]",
-    "lbFEConfigID": "[concat(variables('adlbID'),'/frontendIPConfigurations/',variables('LBFE'))]",
-    "PDCRDPNATRuleID": "[concat(variables('adlbID'),'/inboundNatRules/',variables('PDCRDPNAT'))]",
-    "BDCRDPNATRuleID": "[concat(variables('adlbID'),'/inboundNatRules/',variables('BDCRDPNAT'))]",
-    "BEAddressPoolID": "[concat(variables('adlbID'),'/backendAddressPools/',variables('LBBE'))]",
+    "adlbFEConfigID": "[concat(variables('adlbID'),'/frontendIPConfigurations/',variables('adLBFE'))]",
+    "adPDCRDPNATRuleID": "[concat(variables('adlbID'),'/inboundNatRules/',variables('adPDCRDPNAT'))]",
+    "adBDCRDPNATRuleID": "[concat(variables('adlbID'),'/inboundNatRules/',variables('adBDCRDPNAT'))]",
+    "adBEAddressPoolID": "[concat(variables('adlbID'),'/backendAddressPools/',variables('adLBBE'))]",
     "adPDCDataDisk": "ADPDCDataDisk",
     "adBDCDataDisk": "ADBDCDataDisk",
     "adDataDiskSize": 1000,
@@ -317,7 +249,6 @@
     "nicTemplateUri": "[concat(parameters('assetLocation'),'/nestedtemplates/nic.json')]",
     "vnetwithDNSTemplateUri": "[concat(parameters('assetLocation'),'/nestedtemplates/vnet-with-dns-server.json')]",
     "configureADBDCTemplateUri": "[concat(parameters('assetLocation'),'/nestedtemplates/configureADBDC.json')]",
-    "adfsTemplateUri": "[concat(parameters('assetLocation'),'/nestedtemplates/adfs.json')]",
     "adPDCModulesURL": "[concat(parameters('assetLocation'),'/DSC/CreateADPDC.ps1.zip')]",
     "adPDCConfigurationFunction": "CreateADPDC.ps1\\CreateADPDC",
     "adBDCPreparationModulesURL": "[concat(parameters('assetLocation'),'/DSC/PrepareADBDC.ps1.zip')]",
@@ -329,7 +260,7 @@
     {
       "name": "[parameters('newStorageAccountName')]",
       "type": "Microsoft.Storage/storageAccounts",
-      "apiVersion": "2016-01-01",
+      "apiVersion": "2016-05-01",
       "location": "[resourceGroup().location]",
       "properties": {
       },
@@ -339,7 +270,7 @@
     {
       "name": "[parameters('publicIPAddressName')]",
       "type": "Microsoft.Network/publicIPAddresses",
-      "apiVersion": "2016-03-30",
+      "apiVersion": "2016-10-01",
       "location": "[resourceGroup().location]",
       "properties": {
         "publicIPAllocationMethod": "[parameters('publicIPAddressType')]",
@@ -349,24 +280,10 @@
       }
     },
     {
-      "name": "wap-availabilityset",
+      "name": "[parameters('adAvailabilitySetName')]",
       "type": "Microsoft.Compute/availabilitySets",
-      "location": "[resourceGroup().location]",
-      "apiVersion": "2015-06-15",
-      "properties": {
-          "platformUpdateDomainCount": 1,
-          "platformFaultDomainCount": 1
-          }
-    },
-    {
-      "name": "dc-availabilityset",
-      "type": "Microsoft.Compute/availabilitySets",
-      "location": "[resourceGroup().location]",
-      "apiVersion": "2015-06-15",
-      "properties": {
-          "platformUpdateDomainCount": 1,
-          "platformFaultDomainCount": 1
-          }
+      "apiVersion": "2016-03-30",
+      "location": "[resourceGroup().location]"
     },
     {
       "name": "VNet",
@@ -385,17 +302,11 @@
           "virtualNetworkAddressRange": {
             "value": "[parameters('virtualNetworkAddressRange')]"
           },
-          "internalsubnetName": {
-            "value": "[parameters('internalSubnetName')]"
+          "subnetName": {
+            "value": "[parameters('adSubnetName')]"
           },
-          "internalsubnetRange": {
-            "value": "[parameters('internalSubnetRange')]"
-          },
-          "dmzsubnetName": {
-            "value": "[parameters('dmzSubnetName')]"
-          },
-          "dmzsubnetRange": {
-            "value": "[parameters('dmzSubnetRange')]"
+          "subnetRange": {
+            "value": "[parameters('adSubnet')]"
           }
         }
       }
@@ -403,7 +314,7 @@
     {
       "name": "[variables('adLBName')]",
       "type": "Microsoft.Network/loadBalancers",
-      "apiVersion": "2016-03-30",
+      "apiVersion": "2016-10-01",
       "location": "[resourceGroup().location]",
       "dependsOn": [
         "[resourceId('Microsoft.Network/publicIPAddresses',parameters('publicIPAddressName'))]"
@@ -411,7 +322,7 @@
       "properties": {
         "frontendIPConfigurations": [
           {
-            "name": "[variables('LBFE')]",
+            "name": "[variables('adLBFE')]",
             "properties": {
               "publicIPAddress": {
                 "id": "[resourceId('Microsoft.Network/publicIPAddresses',parameters('publicIPAddressName'))]"
@@ -421,15 +332,15 @@
         ],
         "backendAddressPools": [
           {
-            "name": "[variables('LBBE')]"
+            "name": "[variables('adLBBE')]"
           }
         ],
         "inboundNatRules": [
           {
-            "name": "[variables('PDCRDPNAT')]",
+            "name": "[variables('adPDCRDPNAT')]",
             "properties": {
               "frontendIPConfiguration": {
-                "id": "[variables('lbFEConfigID')]"
+                "id": "[variables('adlbFEConfigID')]"
               },
               "protocol": "tcp",
               "frontendPort": "[parameters('pdcRDPPort')]",
@@ -438,26 +349,13 @@
             }
           },
           {
-            "name": "[variables('BDCRDPNAT')]",
+            "name": "[variables('adBDCRDPNAT')]",
             "properties": {
               "frontendIPConfiguration": {
-                "id": "[variables('lbFEConfigID')]"
+                "id": "[variables('adlbFEConfigID')]"
               },
               "protocol": "tcp",
               "frontendPort": "[parameters('bdcRDPPort')]",
-              "backendPort": 3389,
-              "enableFloatingIP": false
-            }
-          },
-          {
-            "name": "[variables('ADFSRDPNAT')[copyIndex()]]",
-            "copy":2,
-            "properties": {
-              "frontendIPConfiguration": {
-                "id": "[variables('lbFEConfigID')]"
-              },
-              "protocol": "tcp",
-              "frontendPort": "[add(parameters('ADFSRDPPort'),copyIndex(-1))]",
               "backendPort": 3389,
               "enableFloatingIP": false
             }
@@ -468,7 +366,7 @@
     {
       "name": "[parameters('adPDCNicName')]",
       "type": "Microsoft.Network/networkInterfaces",
-      "apiVersion": "2016-03-30",
+      "apiVersion": "2016-10-01",
       "location": "[resourceGroup().location]",
       "dependsOn": [
         "Microsoft.Resources/deployments/VNet",
@@ -482,16 +380,16 @@
               "privateIPAllocationMethod": "Static",
               "privateIPAddress": "[parameters('adPDCNicIPAddress')]",
               "subnet": {
-                "id": "[variables('internalSubnetRef')]"
+                "id": "[variables('adSubnetRef')]"
               },
               "loadBalancerBackendAddressPools": [
                 {
-                  "id": "[variables('BEAddressPoolID')]"
+                  "id": "[variables('adBEAddressPoolID')]"
                 }
               ],
               "loadBalancerInboundNatRules": [
                 {
-                  "id": "[variables('PDCRDPNATRuleID')]"
+                  "id": "[variables('adPDCRDPNATRuleID')]"
                 }
               ]
             }
@@ -502,7 +400,7 @@
     {
       "name": "[parameters('adBDCNicName')]",
       "type": "Microsoft.Network/networkInterfaces",
-      "apiVersion": "2016-03-30",
+      "apiVersion": "2016-10-01",
       "location": "[resourceGroup().location]",
       "dependsOn": [
         "Microsoft.Resources/deployments/VNet",
@@ -516,16 +414,16 @@
               "privateIPAllocationMethod": "Static",
               "privateIPAddress": "[parameters('adBDCNicIPAddress')]",
               "subnet": {
-                "id": "[variables('internalSubnetRef')]"
+                "id": "[variables('adSubnetRef')]"
               },
               "loadBalancerBackendAddressPools": [
                 {
-                  "id": "[variables('BEAddressPoolID')]"
+                  "id": "[variables('adBEAddressPoolID')]"
                 }
               ],
               "loadBalancerInboundNatRules": [
                 {
-                  "id": "[variables('BDCRDPNATRuleID')]"
+                  "id": "[variables('adBDCRDPNATRuleID')]"
                 }
               ]
             }
@@ -541,16 +439,15 @@
       "dependsOn": [
         "[resourceId('Microsoft.Storage/storageAccounts',parameters('newStorageAccountName'))]",
         "[resourceId('Microsoft.Network/networkInterfaces',parameters('adPDCNicName'))]",
-        "[resourceId('Microsoft.Compute/availabilitySets', 'dc-availabilityset')]",
+        "[resourceId('Microsoft.Compute/availabilitySets', parameters('adAvailabilitySetName'))]",
         "[resourceId('Microsoft.Network/loadBalancers',variables('adLBName'))]"
       ],
       "properties": {
         "hardwareProfile": {
           "vmSize": "[parameters('adVMSize')]"
         },
-        "publicIPAllocationMethod":"Dynamic",
         "availabilitySet": {
-          "id": "[resourceId('Microsoft.Compute/availabilitySets', 'dc-availabilityset')]"
+          "id": "[resourceId('Microsoft.Compute/availabilitySets', parameters('adAvailabilitySetName'))]"
         },
         "osProfile": {
           "computerName": "[parameters('adPDCVMName')]",
@@ -648,10 +545,10 @@
             "value": "[parameters('virtualNetworkAddressRange')]"
           },
           "subnetName": {
-            "value": "[parameters('internalSubnetName')]"
+            "value": "[parameters('adSubnetName')]"
           },
           "subnetRange": {
-            "value": "[parameters('internalSubnetRange')]"
+            "value": "[parameters('adSubnet')]"
           },
           "DNSServerAddress": {
             "value": [
@@ -660,7 +557,7 @@
           }
         }
       }
-      },
+    },
     {
       "name": "UpdateBDCNIC",
       "type": "Microsoft.Resources/deployments",
@@ -687,16 +584,16 @@
                   "privateIPAllocationMethod": "Static",
                   "privateIPAddress": "[parameters('adBDCNicIPAddress')]",
                   "subnet": {
-                    "id": "[variables('internalSubnetRef')]"
+                    "id": "[variables('adSubnetRef')]"
                   },
                   "loadBalancerBackendAddressPools": [
                     {
-                      "id": "[variables('BEAddressPoolID')]"
+                      "id": "[variables('adBEAddressPoolID')]"
                     }
                   ],
                   "loadBalancerInboundNatRules": [
                     {
-                      "id": "[variables('BDCRDPNATRuleID')]"
+                      "id": "[variables('adBDCRDPNATRuleID')]"
                     }
                   ]
                 }
@@ -719,16 +616,15 @@
       "dependsOn": [
         "[resourceId('Microsoft.Storage/storageAccounts',parameters('newStorageAccountName'))]",
         "[resourceId('Microsoft.Network/networkInterfaces',parameters('adBDCNicName'))]",
-        "[resourceId('Microsoft.Compute/availabilitySets', 'dc-availabilityset')]",
+        "[resourceId('Microsoft.Compute/availabilitySets', parameters('adAvailabilitySetName'))]",
         "[resourceId('Microsoft.Network/loadBalancers',variables('adLBName'))]"
       ],
       "properties": {
         "hardwareProfile": {
           "vmSize": "[parameters('adVMSize')]"
         },
-        "publicIPAllocationMethod":"Dynamic",
         "availabilitySet": {
-          "id": "[resourceId('Microsoft.Compute/availabilitySets', 'dc-availabilityset')]"
+          "id": "[resourceId('Microsoft.Compute/availabilitySets', parameters('adAvailabilitySetName'))]"
         },
         "osProfile": {
           "computerName": "[parameters('adBDCVMName')]",
@@ -854,10 +750,10 @@
             "value": "[parameters('virtualNetworkAddressRange')]"
           },
           "subnetName": {
-            "value": "[parameters('internalSubnetName')]"
+            "value": "[parameters('adSubnetName')]"
           },
           "subnetRange": {
-            "value": "[parameters('internalSubnetRange')]"
+            "value": "[parameters('adSubnet')]"
           },
           "DNSServerAddress": {
             "value": [
