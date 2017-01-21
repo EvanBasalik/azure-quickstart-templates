@@ -112,6 +112,16 @@
   },
   "resources": [
         {
+      "name": "adfs-availabilityset",
+      "type": "Microsoft.Compute/availabilitySets",
+      "location": "[resourceGroup().location]",
+      "apiVersion": "2015-06-15",
+      "properties": {
+          "platformUpdateDomainCount": 1,
+          "platformFaultDomainCount": 1
+          }
+    },
+        {
       "name": "adfs-loadbalancer",
       "type": "Microsoft.Network/loadBalancers",
       "apiVersion": "2016-03-30",
