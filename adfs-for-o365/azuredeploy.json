@@ -26,7 +26,7 @@
       "metadata": {
         "description": "The name of the Virtual Network to Create"
       },
-      "defaultValue": "adVNET"
+      "defaultValue": "internalVNET"
     },
     "virtualNetworkAddressRange": {
       "type": "string",
@@ -40,7 +40,7 @@
       "metadata": {
         "description": "The name of the subnet created in the new VNET"
       },
-      "defaultValue": "adSubnet"
+      "defaultValue": "internalSubnet"
     },
     "internalSubnetRange": {
       "type": "string",
@@ -48,6 +48,20 @@
         "description": "The address range of the subnet created in the new VNET"
       },
       "defaultValue": "10.0.0.0/24"
+    },
+        "dmzsubnetName": {
+      "type": "string",
+      "metadata": {
+        "Description": "The name of the DMZ subnet"
+      },
+      "defaultValue": "dmzsubnet"
+    },
+    "dmzsubnetRange": {
+      "type": "string",
+      "metadata": {
+        "Description": "The address range of the subnet for the DMZ"
+      },
+      "defaultValue": "10.0.0.0/30"
     },
     "adPDCNicName": {
       "type": "string",
@@ -195,13 +209,15 @@
       "type": "string",
       "metadata": {
         "description": "The FQDN of the AD Domain created "
-      }
+      },
+      "defaultValue": "corpeotd.info"
     },
     "dnsPrefix": {
       "type": "string",
       "metadata": {
         "description": "The DNS prefix for the public IP address used by the Load Balancer"
-      }
+      },
+    "defaultValue": "corpeotd"
     },
     "pdcRDPPort": {
       "type": "int",
@@ -217,6 +233,68 @@
       },
       "defaultValue": 13389
     },
+        "ADFSRDPPort": {
+      "type": "int",
+      "metadata": {
+        "description": "The public RDP port for the first ADFS instance. Successive instances will be iterated by 1"
+      },
+      "defaultValue": 5000
+    },
+      "adfsServerNamingConvention": {
+      "type": "string",
+      "minLength": 1,
+      "metadata": {
+      "description": "Naming convention for ADFS nodes. For example, input 'ADFS' if you want them to be named ADFS1, ADFS2"
+    },
+    "defaultValue": "ADFS"
+        },
+    "adfsVMSize": {
+      "type": "string",
+      "allowedValues": [
+        "Standard_D1",
+        "Standard_DS1",
+        "Standard_D2",
+        "Standard_DS2",
+        "Standard_D3",
+        "Standard_DS3",
+        "Standard_D4",
+        "Standard_DS4",
+        "Standard_D11",
+        "Standard_DS11",
+        "Standard_D12",
+        "Standard_DS12",
+        "Standard_D13",
+        "Standard_DS13",
+        "Standard_D14",
+        "Standard_DS14",
+        "Standard_D1_v2",
+        "Standard_DS1_v2",
+        "Standard_D2_v2",
+        "Standard_DS2_v2",
+        "Standard_D3_v2",
+        "Standard_DS3_v2",
+        "Standard_D4_v2",
+        "Standard_DS4_v2",
+        "Standard_D11_v2",
+        "Standard_DS11_v2",
+        "Standard_D12_v2",
+        "Standard_DS12_v2",
+        "Standard_D13_v2",
+        "Standard_DS13_v2",
+        "Standard_D14_v2",
+        "Standard_DS14_v2"
+      ],
+      "metadata": {
+        "description": "The size of the ADFS VMs created"
+      },
+      "defaultValue": "Standard_DS2_v2"
+      },
+    "domainJoinOptions": {
+      "type": "int",
+      "defaultValue": 3,
+      "metadata": {
+        "description": "Set of bit flags that define the join options. Default value of 3 is a combination of NETSETUP_JOIN_DOMAIN (0x00000001) & NETSETUP_ACCT_CREATE (0x00000002) i.e. will join the domain and create the account on the domain. For more information see https://msdn.microsoft.com/en-us/library/aa392154(v=vs.85).aspx"}
+        },
     "assetLocation": {
       "type": "string",
       "metadata": {
