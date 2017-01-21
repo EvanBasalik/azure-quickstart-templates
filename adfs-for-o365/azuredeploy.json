@@ -238,7 +238,8 @@
       "minLength": 1,
       "metadata": {
       "description": "Naming convention for ADFS nodes. For example, input 'ADFS' if you want them to be named ADFS1, ADFS2"
-    }
+    },
+    "defaultValue": "ADFS"
         },
     "adfsVMSize": {
       "type": "string",
