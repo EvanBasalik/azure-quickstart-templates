@@ -660,54 +660,7 @@
           }
         }
       }
-    },
-        {
-      "name": "deployADFS",
-      "type": "Microsoft.Resources/deployments",
-      "apiVersion": "2016-09-01",
-      "dependsOn": [
-        "Microsoft.Resources/deployments/UpdateVNetDNS1"
-      ],
-      "properties": {
-        "mode": "Incremental",
-        "templateLink": {
-          "uri": "[variables('adfsTemplateUri')]",
-          "contentVersion": "1.0.0.0"
-        },
-        "parameters": {
-          "virtualNetworkName": {
-            "value": "[parameters('adfsServerNamingConvention')]"
-          },
-          "virtualNetworkAddressRange": {
-            "value": "[parameters('adfsVMSize')]"
-          },
-          "domainJoinOptions":{
-            "value":"[parameters('domainJoinOptions')]"
-          },
-          "subnetName": {
-            "value": "[parameters('internalSubnetName')]"
-          },
-          "subnetRange": {
-            "value": "[parameters('internalSubnetRange')]"
-          },
-          "DNSServerAddress": {
-            "value": [
-              "[parameters('adPDCNicIPAddress')]"
-            ]
-          },
-          "adminUsername":{
-            "value":[
-            "[parameters('adminUsername')]"
-            ]
-          },
-          "adminpassword":{
-            "value":[
-              "[parameters('adminPassword')]"
-            ]
-          }
-        }
-      }
-    },
+      },
     {
       "name": "UpdateBDCNIC",
       "type": "Microsoft.Resources/deployments",
