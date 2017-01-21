@@ -353,22 +353,34 @@
       }
     },
     {
-      "name": "adfs-availabilityset",
+      "name": "adfs-availabilitysetName",
       "type": "Microsoft.Compute/availabilitySets",
-      "apiVersion": "2016-03-30",
-      "location": "[resourceGroup().location]"
+      "location": "[resourceGroup().location]",
+      "apiVersion": "2015-06-15",
+      "properties": {
+          "platformUpdateDomainCount": 1,
+          "platformFaultDomainCount": 1
+          }
     },
-        {
-      "name": "wap-availabilityset",
+    {
+      "name": "wap-availabilitysetName",
       "type": "Microsoft.Compute/availabilitySets",
-      "apiVersion": "2016-03-30",
-      "location": "[resourceGroup().location]"
+      "location": "[resourceGroup().location]",
+      "apiVersion": "2015-06-15",
+      "properties": {
+          "platformUpdateDomainCount": 1,
+          "platformFaultDomainCount": 1
+          }
     },
-        {
-      "name": "dc-availabilityset",
+    {
+      "name": "dc-availabilitysetName",
       "type": "Microsoft.Compute/availabilitySets",
-      "apiVersion": "2016-03-30",
-      "location": "[resourceGroup().location]"
+      "location": "[resourceGroup().location]",
+      "apiVersion": "2015-06-15",
+      "properties": {
+          "platformUpdateDomainCount": 1,
+          "platformFaultDomainCount": 1
+          }
     },
     {
       "name": "VNet",
@@ -775,6 +787,7 @@
         "hardwareProfile": {
           "vmSize": "[parameters('adVMSize')]"
         },
+        "publicIPAllocationMethod":"Dynamic",
         "availabilitySet": {
           "id": "[resourceId('Microsoft.Compute/availabilitySets', 'dc-availabilityset')]"
         },
