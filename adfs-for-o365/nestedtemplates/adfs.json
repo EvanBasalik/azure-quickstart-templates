@@ -80,8 +80,11 @@
        "type": "string"
       },
     "DNSServerAddress": {
-        "type": "string"
-      },
+      "type": "array",
+      "metadata": {
+        "Description": "The DNS address(es) of the DNS Server(s) used by the VNET"
+      }
+    },
     "imagePublisher": {
       "type": "string",
       "defaultValue": "MicrosoftWindowsServer",
