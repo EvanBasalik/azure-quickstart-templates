@@ -767,7 +767,10 @@
         "networkProfile": {
           "networkInterfaces": [
             {
-              "id": "[resourceId('Microsoft.Network/networkInterfaces',parameters('BDCNicName'))]"
+              "id": "[resourceId('Microsoft.Network/networkInterfaces',parameters('BDCNicName'))]",
+              "networkSecurityGroup": {
+                  "id": "[resourceId('Microsoft.Network/networkSecurityGroups', concat(parameters('internalsubnetName'),'-nsg'))]"
+                }   
             }
           ]
         }

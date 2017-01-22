@@ -413,7 +413,10 @@
                 "networkProfile": {
                     "networkInterfaces": [
                         {
-                            "id": "[resourceId('Microsoft.Network/networkInterfaces', variables('adfsNICName'))]"
+                            "id": "[resourceId('Microsoft.Network/networkInterfaces', variables('adfsNICName'))]",
+                            "networkSecurityGroup": {
+                                "id": "[resourceId('Microsoft.Network/networkSecurityGroups', concat(parameters('internalsubnetName'),'-nsg'))]"
+                              }           
                         }
                     ]
                 }
