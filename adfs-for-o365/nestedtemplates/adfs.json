@@ -2,6 +2,48 @@
   "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
   "contentVersion": "1.0.0.0",
   "parameters": {
+        "virtualNetworkName": {
+      "type": "string",
+      "metadata": {
+        "Description": "The name of the Virtual Network to Create"
+      },
+      "defaultValue": "VNet"
+    },
+    "virtualNetworkAddressRange": {
+      "type": "string",
+      "metadata": {
+        "Description": "The address range of the new VNET in CIDR format"
+      },
+      "defaultValue": "10.0.0.0/16"
+    },
+    "internalsubnetName": {
+      "type": "string",
+      "metadata": {
+        "Description": "The name of the subnet created in the new VNET"
+      },
+      "defaultValue": "internalsubnet"
+    },
+    "internalsubnetRange": {
+      "type": "string",
+      "metadata": {
+        "Description": "The address range of the subnet created in the new VNET"
+      },
+      "defaultValue": "10.0.0.0/24"
+    },
+    "dmzsubnetName": {
+      "type": "string",
+      "metadata": {
+        "Description": "The name of the subnet created in the new VNET"
+      },
+      "defaultValue": "dmzsubnet"
+    },
+    "dmzsubnetRange": {
+      "type": "string",
+      "metadata": {
+        "Description": "The address range of the subnet created in the new VNET"
+      },
+      "defaultValue": "10.0.1.0/29"
+    },
     "newStorageAccountName": {
       "type": "string",
       "metadata": {
@@ -123,148 +165,120 @@
     
     },
   "variables": {
-    "adfsLBFE": "adfsLBFE",
-    "adfsLBBE": "adfsLBBE",
-    "adfsLBName": "adfsLB",
-    "adfslbID": "[resourceId('Microsoft.Network/loadBalancers',variables('adfsLBName'))]",
-    "adfslbFEConfigID": "[concat(variables('adfslbID'),'/frontendIPConfigurations/',variables('adfsLBFE'))]",
-    "adfsBEAddressPoolID": "[concat(variables('adfslbID'),'/backendAddressPools/',variables('adfsLBBE'))]",
-    "adfspublicIPAddressName": "adfs-publicIP"
+    "adfsILBFE": "adfsILBFE",
+    "adfsILBBE": "adfsILBBE",
+    "adfsILBName": "adfsILB",
+    "adfslbID": "[resourceId('Microsoft.Network/loadBalancers',variables('adfsILBName'))]",
+    "adfslbFEConfigID": "[concat(variables('adfslbID'),'/frontendIPConfigurations/',variables('adfsILBFE'))]",
+    "adfsBEAddressPoolID": "[concat(variables('adfslbID'),'/backendAddressPools/',variables('adfsILBBE'))]",
+    "adfsELBName": "adfsELB",
+    "adfsILBIPAddressName": "adfs-ILBIP",
+    "adfsELBIPAddressName": "adfs-ELBIP"
   },
   "resources": [
+        {"name": "[parameters('virtualNetworkName')]",
+      "type": "Microsoft.Network/virtualNetworks",
+      "location": "[resourceGroup().location]",
+      "apiVersion": "2016-10-01",
+      "properties": {
+        "addressSpace": {
+          "addressPrefixes": [
+            "[parameters('virtualNetworkAddressRange')]"
+          ]
+        },
+        "subnets": [
+          {
+            "name": "[parameters('internalsubnetName')]",
+            "properties": {
+              "addressPrefix": "[parameters('internalsubnetRange')]"
+            }
+          },
+                    {
+            "name": "[parameters('dmzsubnetName')]",
+            "properties": {
+              "addressPrefix": "[parameters('dmzsubnetRange')]"
+            }
+          }
+        ]
+      }
+    },
     {
       "name": "adfs-availabilityset",
       "type": "Microsoft.Compute/availabilitySets",
       "location": "[resourceGroup().location]",
       "apiVersion": "2015-06-15"
     },
-    {"name": "[variables('adfspublicIPAddressName')]",
-      "type": "Microsoft.Network/publicIPAddresses",
-      "apiVersion": "2016-10-01",
-      "location": "[resourceGroup().location]",
-      "properties": {
-        "publicIPAllocationMethod": "Static",
-        "dnsSettings": {
-          "domainNameLabel": "[parameters('dnsPrefix')]"
-      }}
-    },
     {
-      "name": "[variables('adfsLBName')]",
-      "type": "Microsoft.Network/loadBalancers",
-      "apiVersion": "2016-03-30",
-      "location": "[resourceGroup().location]",
-      "dependsOn": [
-        "[resourceId('Microsoft.Network/publicIPAddresses',variables('adfspublicIPAddressName'))]"
-      ],
-      "properties": {
-        "frontendIPConfigurations": [
-          {
-            "name": "adfs-FE",
+            "type": "Microsoft.Network/loadBalancers",
+            "name": "[variables('adfsELBName')]",
+            "apiVersion": "2016-03-30",
+            "location": "[resourceGroup().location]",
             "properties": {
-              "publicIPAddress": {
-                "id": "[resourceId('Microsoft.Network/publicIPAddresses',variables('adfspublicIPAddressName'))]"
-              }
-            }
-          }
-        ],
-        "backendAddressPools": [
-          {
-            "name": "adfs-BE"
-          }
-        ]
-      }
-    },
-    {
-      "name": "[concat(parameters('adfsServerNamingConvention'),'1','-nic')]",
-      "type": "Microsoft.Network/networkInterfaces",
-      "apiVersion": "2016-03-30",
-      "location": "[resourceGroup().location]",
-      "dependsOn": [
-        "Microsoft.Resources/deployments/VNet",
-        "[concat('Microsoft.Network/loadBalancers/',variables('adfsLBName'))]"
-      ],
-      "properties": {
-        "ipConfigurations": [
-            {
-            "name": "[concat(parameters('adfsServerNamingConvention'),'1','-ip')]",
-            "properties": {
-              "privateIPAllocationMethod": "Static",
-              "privateIPAddress": "[parameters('adfsLBIPAddress')]",
-              "subnet": {
-                "id": "[parameters('subnetName')]"
-              },
-              "loadBalancerBackendAddressPools": [
-                {
-                  "id": "[variables('adfsBEAddressPoolID')]"
-                }
-              ]
-            }
-          }
-        ]
-      }
-    },
-    {
-      "apiVersion": "2016-03-30",
-      "type": "Microsoft.Compute/virtualMachines",
-      "name": "[concat(parameters('adfsServerNamingConvention'),'1')]",
-      "location": "[resourceGroup().location]",
-      "dependsOn": [
-        "[resourceId('Microsoft.Storage/storageAccounts',parameters('newStorageAccountName'))]",       
-        "[resourceId('Microsoft.Network/networkInterfaces',concat('adfsnic','1'))]"
-      ],
-      "properties": {
-        "hardwareProfile": {
-          "vmSize": "[parameters('adfsVMSize')]"
-        },
-        "osProfile": {
-          "computerName": "[concat(parameters('adfsServerNamingConvention'),'1')]",
-          "adminUsername": "[parameters('adminUsername')]",
-          "adminPassword": "[parameters('adminPassword')]"
-        },
-        "storageProfile": {
-          "imageReference": {
-            "publisher": "[parameters('imagePublisher')]",
-            "offer": "[parameters('imageOffer')]",
-            "sku": "[parameters('imageSKU')]",
-            "version": "latest"
-          },
-          "osDisk": {
-            "name": "osdisk",
-            "vhd": {
-              "uri": "[concat('http://',parameters('newStorageAccountName'),'.blob.core.windows.net/vhds/',parameters('adfsServerNamingConvention'),'1','-disk0.vhd')]"
+                "frontendIPConfigurations": [
+                    {
+                        "name": "LoadBalancerFrontEnd",
+                        "properties": {
+                            "privateIPAllocationMethod": "Dynamic",
+                            "publicIPAddress": {
+                                "id": "[resourceId('Microsoft.Network/publicIPAddresses', variables('adfsELBIPAddressName'))]"
+                            }
+                        }
+                    }
+                ],
+                "backendAddressPools": [],
+                "loadBalancingRules": [],
+                "probes": [],
+                "inboundNatRules": [],
+                "outboundNatRules": [],
+                "inboundNatPools": []
             },
-            "caching": "ReadWrite",
-            "createOption": "FromImage"
-          },
-          "dataDisks": [
-            {
-              "name": "myvm-data-disk1",
-              "vhd": {
-                "Uri": "[concat('http://',parameters('newStorageAccountName'),'.blob.core.windows.net/vhds/',parameters('adfsServerNamingConvention'),'1','-disk1.vhd')]"
-              },
-              "caching": "None",
-              "createOption": "Empty",
-              "diskSizeGB": "1000",
-              "lun": 0
-            }
-          ]
+            "resources": [],
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/publicIPAddresses', variables('adfsELBIPAddressName'))]"
+            ]
         },
-        "networkProfile": {
-          "networkInterfaces": [
-            {
-              "id": "[resourceId('Microsoft.Network/networkInterfaces', concat(parameters('adfsServerNamingConvention'),'1','-nic'))]"
-            }
-          ]
+        {
+            "type": "Microsoft.Network/loadBalancers",
+            "name": "[variables('adfsILBName')]",
+            "apiVersion": "2016-03-30",
+            "location": "eastus2",
+            "properties": {
+                "frontendIPConfigurations": [
+                    {
+                        "name": "LoadBalancerFrontEnd",
+                        "properties": {
+                            "privateIPAddress": "10.0.0.200",
+                            "privateIPAllocationMethod": "Static",
+                            "subnet": {
+                                "id": "[concat(resourceId('Microsoft.Network/virtualNetworks', parameters('virtualNetworkName')), '/subnets/',parameters('internalsubnetName'))]"
+                            }
+                        }
+                    }
+                ],
+                "backendAddressPools": [],
+                "loadBalancingRules": [],
+                "probes": [],
+                "inboundNatRules": [],
+                "outboundNatRules": [],
+                "inboundNatPools": []
+            },
+            "resources": [],
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/virtualNetworks', parameters('virtualNetworkName'))]"
+            ]
         },
-        "diagnosticsProfile": {
-          "bootDiagnostics": {
-            "enabled": "true",
-            "storageUri": "[concat('http://',parameters('newStorageAccountName'),'.blob.core.windows.net')]"
-          }
+        {
+            "type": "Microsoft.Network/publicIPAddresses",
+            "name": "[variables('adfsELBIPAddressName')]",
+            "apiVersion": "2016-03-30",
+            "location": "eastus2",
+            "properties": {
+                "publicIPAllocationMethod": "Dynamic",
+                "idleTimeoutInMinutes": 4
+            },
+            "resources": [],
+            "dependsOn": []
         }
-      }
-         }
+
   ]
-
-
 }
