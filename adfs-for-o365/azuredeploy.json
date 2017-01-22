@@ -320,10 +320,10 @@
     "configureADBDCTemplateUri": "[concat(parameters('assetLocation'),'/nestedtemplates/configureADBDC.json')]",
     "adPDCModulesURL": "[concat(parameters('assetLocation'),'/DSC/CreateADPDC.ps1.zip')]",
     "adPDCConfigurationFunction": "CreateADPDC.ps1\\CreateADPDC",
-    "adBDCPreparationModulesURL": "[concat(parameters('assetLocation'),'/DSC/PrepareADBDC.ps1.zip')]",
-    "adBDCPreparationFunction": "PrepareADBDC.ps1\\PrepareADBDC",
-    "adBDCConfigurationModulesURL": "[concat(parameters('assetLocation'),'/DSC/ConfigureADBDC.ps1.zip')]",
-    "adBDCConfigurationFunction": "ConfigureADBDC.ps1\\ConfigureADBDC",
+    "BDCPreparationModulesURL": "[concat(parameters('assetLocation'),'/DSC/PrepareADBDC.ps1.zip')]",
+    "BDCPreparationFunction": "PrepareADBDC.ps1\\PrepareADBDC",
+    "BDCConfigurationModulesURL": "[concat(parameters('assetLocation'),'/DSC/ConfigureADBDC.ps1.zip')]",
+    "BDCConfigurationFunction": "ConfigureADBDC.ps1\\ConfigureADBDC",
     "dc-AvailabilitySetName": "dc-AvailabilitySet",
     "adfs-AvailabilitySetName": "adfs-AvailabilitySet",
     "wap-AvailabilitySetName": "wap-AvailabilitySet",
@@ -788,8 +788,8 @@
         "typeHandlerVersion": "2.21",
         "autoUpgradeMinorVersion": true,
         "settings": {
-          "ModulesUrl": "[variables('adBDCPreparationModulesURL')]",
-          "ConfigurationFunction": "[variables('adBDCPreparationFunction')]",
+          "ModulesUrl": "[variables('BDCPreparationModulesURL')]",
+          "ConfigurationFunction": "[variables('BDCPreparationFunction')]",
           "Properties": {
             "DNSServer": "[parameters('PDCNicIPAddress')]"
           }
@@ -827,10 +827,10 @@
             "value": "[parameters('domainName')]"
           },
           "adBDCConfigurationFunction": {
-            "value": "[variables('adBDCConfigurationFunction')]"
+            "value": "[variables('BDCConfigurationFunction')]"
           },
           "adBDCConfigurationModulesURL": {
-            "value": "[variables('adBDCConfigurationModulesURL')]"
+            "value": "[variables('BDCConfigurationModulesURL')]"
           }
         }
       }
