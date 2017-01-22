@@ -170,13 +170,15 @@
     "adfsILBFEName": "[concat(variables('adfsILBName'),'BE')]",
     "adfsILBBEName": "[concat(variables('adfsILBName'),'FE')]",
     "adfsILBID": "[resourceId('Microsoft.Network/loadBalancers',variables('adfsILBName'))]",
-    "adfsELBID": "[resourceId('Microsoft.Network/loadBalancers',variables('adfsELBName'))]",
-    "adfslbFEConfigID": "[concat(variables('adfsILBID'),'/frontendIPConfigurations/',variables('adfsILBFEName'))]",
-    "adfsBEAddressPoolID": "[concat(variables('adfsILBID'),'/backendAddressPools/',variables('adfsILBBEName'))]",
-    "adfsELBName": "adfsELB",
-    "adfsELBFEName": "[concat(variables('adfsELBName'),'BE')]",
-    "adfsELBBEName": "[concat(variables('adfsELBName'),'FE')]",
+    "adfsILBFEConfigID": "[concat(variables('adfsILBID'),'/frontendIPConfigurations/',variables('adfsILBFEName'))]",
+    "adfsILBBEAddressPoolID": "[concat(variables('adfsILBID'),'/backendAddressPools/',variables('adfsILBBEName'))]",
     "adfsILBIPAddressName": "adfs-ILBIP",
+    "adfsELBName": "adfsELB",
+    "adfsELBFEName": "[concat(variables('adfsELBName'),'FE')]",
+    "adfsELBBEName": "[concat(variables('adfsELBName'),'BE')]",
+    "adfsELBID": "[resourceId('Microsoft.Network/loadBalancers',variables('adfsELBName'))]",
+    "adfsELBFEConfigID": "[concat(variables('adfsILBID'),'/frontendIPConfigurations/',variables('adfsELBFEName'))]",
+    "adfsELBBEAddressPoolID": "[concat(variables('adfsILBID'),'/backendAddressPools/',variables('adfsELBBEName'))]",
     "adfsELBIPAddressName": "adfs-ELBIP",
     "adfsAvailabilitySetName": "adfs-availabilityset",
     "adfsNICName": "adfs-NIC1"
@@ -222,7 +224,7 @@
             "properties": {
                 "frontendIPConfigurations": [
                     {
-                        "name": "LoadBalancerFrontEnd",
+                        "name": "[variables('adfsELBFEName')]",
                         "properties": {
                             "privateIPAllocationMethod": "Dynamic",
                             "publicIPAddress": {
@@ -241,17 +243,7 @@
                 "probes": [
                 ],
                 "inboundNatRules": [
-                    {
-                        "name": "RDPADFS",
-                        "properties": {
-                            "frontendIPConfiguration": {
-                                "id": "[variables('adfsELBID')]"
-                            },
-                            "frontendPort": 5000,
-                            "backendPort": 3389,
-                            "protocol": "Tcp"
-                        }
-                    }
+
                 ],
                 "outboundNatRules": [],
                 "inboundNatPools": []
@@ -321,7 +313,7 @@
             "type": "Microsoft.Network/publicIPAddresses",
             "name": "[variables('adfsELBIPAddressName')]",
             "apiVersion": "2016-03-30",
-            "location": "eastus2",
+            "location": "[resourceGroup().location]",
             "properties": {
                 "publicIPAllocationMethod": "Dynamic",
                 "idleTimeoutInMinutes": 4
