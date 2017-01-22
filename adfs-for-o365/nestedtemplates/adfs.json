@@ -173,7 +173,9 @@
     "adfsBEAddressPoolID": "[concat(variables('adfslbID'),'/backendAddressPools/',variables('adfsILBBE'))]",
     "adfsELBName": "adfsELB",
     "adfsILBIPAddressName": "adfs-ILBIP",
-    "adfsELBIPAddressName": "adfs-ELBIP"
+    "adfsELBIPAddressName": "adfs-ELBIP",
+    "adfsAvailabilitySetName": "adfs-availabilityset",
+    "adfsNICName": "adfs-NIC"
   },
   "resources": [
         {"name": "[parameters('virtualNetworkName')]",
@@ -278,6 +280,93 @@
             },
             "resources": [],
             "dependsOn": []
+        },
+               {
+            "type": "Microsoft.Compute/virtualMachines",
+            "name": "[concat(parameters('adfsServerNamingConvention'),'1')]",
+            "apiVersion": "2015-06-15",
+            "location": "eastus2",
+            "properties": {
+                "availabilitySet": {
+                    "id": "[resourceId('Microsoft.Compute/availabilitySets', 'adfs-availabilityset')]"
+                },
+                "hardwareProfile": {
+                    "vmSize": "Standard_DS1_v2"
+                },
+                "storageProfile": {
+                    "imageReference": {
+                        "publisher": "MicrosoftWindowsServer",
+                        "offer": "WindowsServer",
+                        "sku": "2012-R2-Datacenter",
+                        "version": "latest"
+                    },
+                    "osDisk": {
+                        "name": "[concat(parameters('adfsServerNamingConvention'),'osdisk','1')]",
+                        "createOption": "FromImage",
+                        "vhd": {
+                            "uri": "[concat('https', '://', parameters('newStorageAccountName'), '.blob.core.windows.net', concat('/vhds/', concat(parameters('adfsServerNamingConvention'),'1'),'.vhd'))]"
+                        },
+                        "caching": "ReadWrite"
+                    },
+                    "dataDisks": []
+                },
+                "osProfile": {
+                    "computerName": "concat(parameters('adfsServerNamingConvention'),'1')]",
+                    "adminUsername": "EndoftheDay",
+                    "windowsConfiguration": {
+                        "provisionVMAgent": true,
+                        "enableAutomaticUpdates": true
+                    },
+                    "secrets": [],
+                    "adminPassword": "[parameters('adminPassword')]"
+                },
+                "networkProfile": {
+                    "networkInterfaces": [
+                        {
+                            "id": "[resourceId('Microsoft.Network/networkInterfaces', variables('adfsNICName'))]"
+                        }
+                    ]
+                }
+            },
+            "resources": [],
+            "dependsOn": [
+                "[resourceId('Microsoft.Compute/availabilitySets', variables('adfsAvailabilitySetName'))]",
+                "[resourceId('Microsoft.Storage/storageAccounts', parameters('newStorageAccountName'))]",
+                "[resourceId('Microsoft.Network/networkInterfaces', variables('adfsNICName'))]"
+            ]
+        },
+               {
+            "comments": "Generalized from resource: '/subscriptions/27b2ee0a-4093-4253-95b5-c595487ad66f/resourceGroups/adfs60/providers/Microsoft.Network/networkInterfaces/adfs1852'.",
+            "type": "Microsoft.Network/networkInterfaces",
+            "name": "[variables('adfsNICName')]",
+            "apiVersion": "2016-03-30",
+            "location": "eastus2",
+            "properties": {
+                "ipConfigurations": [
+                    {
+                        "name": "ipconfig1",
+                        "properties": {
+                            "privateIPAddress": "10.0.0.4",
+                            "privateIPAllocationMethod": "Dynamic",
+                            "publicIPAddress": {
+                                "id": "[resourceId('Microsoft.Network/publicIPAddresses', variables('adfsELBIPAddressName'))]"
+                            },
+                            "subnet": {
+                                "id": "[concat(resourceId('Microsoft.Network/virtualNetworks', parameters('virtualNetworkName')), '/subnets/internalsubnet')]"
+                            }
+                        }
+                    }
+                ],
+                "dnsSettings": {
+                    "dnsServers": []
+                },
+                "enableIPForwarding": false
+            },
+            "resources": [],
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/publicIPAddresses', variables('adfsELBIPAddressName'))]",
+                "[resourceId('Microsoft.Network/virtualNetworks', parameters('virtualNetworkName'))]"
+            ]
         }
 
   ]
