@@ -27,7 +27,7 @@
       "metadata": {
         "description": "The name of the Virtual Network to Create"
       },
-      "defaultValue": "internalVNET"
+      "defaultValue": "VNET"
     },
     "virtualNetworkAddressRange": {
       "type": "string",
@@ -62,7 +62,7 @@
       "metadata": {
         "Description": "The address range of the subnet for the DMZ"
       },
-      "defaultValue": "10.0.0.0/30"
+      "defaultValue": "10.0.1.0/29"
     },
     "PDCNicName": {
       "type": "string",
