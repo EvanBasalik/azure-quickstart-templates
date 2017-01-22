@@ -396,11 +396,17 @@
           "virtualNetworkAddressRange": {
             "value": "[parameters('virtualNetworkAddressRange')]"
           },
-          "subnetName": {
+          "internalsubnetName": {
             "value": "[parameters('internalSubnetName')]"
           },
-          "subnetRange": {
+          "internalsubnetRange": {
             "value": "[parameters('internalSubnetRange')]"
+          },
+           "dmzsubnetName": {
+            "value": "[parameters('dmzSubnetName')]"
+          },
+          "dmzsubnetRange": {
+            "value": "[parameters('dmzSubnetRange')]"
           }
         }
       }
@@ -638,11 +644,17 @@
           "virtualNetworkAddressRange": {
             "value": "[parameters('virtualNetworkAddressRange')]"
           },
-          "subnetName": {
+          "internalsubnetName": {
             "value": "[parameters('internalSubnetName')]"
           },
-          "subnetRange": {
+          "internalsubnetRange": {
             "value": "[parameters('internalSubnetRange')]"
+          },
+          "dmzsubnetName": {
+            "value": "[parameters('dmzSubnetName')]"
+          },
+          "dmzsubnetRange": {
+            "value": "[parameters('dmzSubnetRange')]"
           },
           "DNSServerAddress": {
             "value": [
