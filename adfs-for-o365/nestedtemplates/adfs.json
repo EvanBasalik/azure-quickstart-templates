@@ -118,11 +118,7 @@
       "name": "adfs-availabilityset",
       "type": "Microsoft.Compute/availabilitySets",
       "location": "[resourceGroup().location]",
-      "apiVersion": "2015-06-15",
-      "properties": {
-          "platformUpdateDomainCount": 1,
-          "platformFaultDomainCount": 1
-          }
+      "apiVersion": "2015-06-15"
     },
         {
       "name": "adfs-loadbalancer",
