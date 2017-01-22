@@ -49,7 +49,7 @@
       "metadata": {
         "description": "The name of the new storage account created to store the VMs disks"
       },
-      "defaultValue": "evanba"},
+      "defaultValue": "evanbaadfs3"},
     "adminUsername": {
       "type": "string",
       "metadata": {
@@ -72,7 +72,7 @@
       "metadata": {
         "description": "The DNS prefix for the public IP address used by the Load Balancer"
       },
-      "defaultValue": "corpeotd"
+      "defaultValue": "corpeotdadfs3"
     },
     "adfsServerNamingConvention": {
       "type": "string",
@@ -166,17 +166,20 @@
     
     },
   "variables": {
-    "adfsILBFE": "adfsILBFE",
-    "adfsILBBE": "adfsILBBE",
     "adfsILBName": "adfsILB",
-    "adfslbID": "[resourceId('Microsoft.Network/loadBalancers',variables('adfsILBName'))]",
-    "adfslbFEConfigID": "[concat(variables('adfslbID'),'/frontendIPConfigurations/',variables('adfsILBFE'))]",
-    "adfsBEAddressPoolID": "[concat(variables('adfslbID'),'/backendAddressPools/',variables('adfsILBBE'))]",
+    "adfsILBFEName": "[concat(variables('adfsILBName'),'BE')]",
+    "adfsILBBEName": "[concat(variables('adfsILBName'),'FE')]",
+    "adfsILBID": "[resourceId('Microsoft.Network/loadBalancers',variables('adfsILBName'))]",
+    "adfsELBID": "[resourceId('Microsoft.Network/loadBalancers',variables('adfsELBName'))]",
+    "adfslbFEConfigID": "[concat(variables('adfsILBID'),'/frontendIPConfigurations/',variables('adfsILBFEName'))]",
+    "adfsBEAddressPoolID": "[concat(variables('adfsILBID'),'/backendAddressPools/',variables('adfsILBBEName'))]",
     "adfsELBName": "adfsELB",
+    "adfsELBFEName": "[concat(variables('adfsELBName'),'BE')]",
+    "adfsELBBEName": "[concat(variables('adfsELBName'),'FE')]",
     "adfsILBIPAddressName": "adfs-ILBIP",
     "adfsELBIPAddressName": "adfs-ELBIP",
     "adfsAvailabilitySetName": "adfs-availabilityset",
-    "adfsNICName": "adfs-NIC"
+    "adfsNICName": "adfs-NIC1"
   },
   "resources": [
         {"name": "[parameters('virtualNetworkName')]",
@@ -228,10 +231,28 @@
                         }
                     }
                 ],
-                "backendAddressPools": [],
-                "loadBalancingRules": [],
-                "probes": [],
-                "inboundNatRules": [],
+                "backendAddressPools": [
+                    {
+                        "name": "[variables('adfsELBBEName')]"
+                    }
+                ],
+                "loadBalancingRules": [
+                ],
+                "probes": [
+                ],
+                "inboundNatRules": [
+                    {
+                        "name": "RDPADFS",
+                        "properties": {
+                            "frontendIPConfiguration": {
+                                "id": "[variables('adfsELBID')]"
+                            },
+                            "frontendPort": 5000,
+                            "backendPort": 3389,
+                            "protocol": "Tcp"
+                        }
+                    }
+                ],
                 "outboundNatRules": [],
                 "inboundNatPools": []
             },
@@ -244,7 +265,7 @@
             "type": "Microsoft.Network/loadBalancers",
             "name": "[variables('adfsILBName')]",
             "apiVersion": "2016-03-30",
-            "location": "eastus2",
+            "location": "[resourceGroup().location]",
             "properties": {
                 "frontendIPConfigurations": [
                     {
@@ -258,9 +279,35 @@
                         }
                     }
                 ],
-                "backendAddressPools": [],
-                "loadBalancingRules": [],
-                "probes": [],
+                "backendAddressPools": [
+                    {
+                        "name": "[variables('adfsILBBEName')]"
+                    }
+                ],
+                "loadBalancingRules": [
+                    
+                ],
+                "probes": [
+                    {
+                        "name": "adfs-ILB-probe-80",
+                        "properties": {
+                            "protocol": "Tcp",
+                            "port": 80,
+                            "intervalInSeconds": 5,
+                            "numberOfProbes": 2
+                        }
+                    },
+                    {
+                        "name": "adfs-ILB-probe-443",
+                        "properties": {
+                            "protocol": "Http",
+                            "port": 443,
+                            "requestPath": "/",
+                            "intervalInSeconds": 5,
+                            "numberOfProbes": 2
+                        }
+                    }
+                ],
                 "inboundNatRules": [],
                 "outboundNatRules": [],
                 "inboundNatPools": []
@@ -296,10 +343,10 @@
             "type": "Microsoft.Compute/virtualMachines",
             "name": "[concat(parameters('adfsServerNamingConvention'),'1')]",
             "apiVersion": "2015-06-15",
-            "location": "eastus2",
+            "location": "[resourceGroup().location]",
             "properties": {
                 "availabilitySet": {
-                    "id": "[resourceId('Microsoft.Compute/availabilitySets', 'adfs-availabilityset')]"
+                    "id": "[resourceId('Microsoft.Compute/availabilitySets', variables('adfsAvailabilitySetName'))]"
                 },
                 "hardwareProfile": {
                     "vmSize": "[parameters('adfsVMSize')]"
@@ -350,7 +397,7 @@
             "type": "Microsoft.Network/networkInterfaces",
             "name": "[variables('adfsNICName')]",
             "apiVersion": "2016-03-30",
-            "location": "eastus2",
+            "location": "[resourceGroup().location]",
             "properties": {
                 "ipConfigurations": [
                     {
@@ -360,7 +407,15 @@
                             "privateIPAllocationMethod": "Dynamic",
                             "subnet": {
                                 "id": "[concat(resourceId('Microsoft.Network/virtualNetworks', parameters('virtualNetworkName')), '/subnets/internalsubnet')]"
-                            }
+                            },
+                             "loadBalancerBackendAddressPools": [
+                                {
+                                    "id": "[concat(resourceId('Microsoft.Network/loadBalancers', variables('adfsILBName')), concat('/backendAddressPools/',variables('adfsILBBEName')))]"
+                                },
+                                {
+                                    "id": "[concat(resourceId('Microsoft.Network/loadBalancers', variables('adfsELBName')), concat('/backendAddressPools/',variables('adfsELBBEName')))]"
+                                }
+                             ]
                         }
                     }
                 ],
@@ -371,7 +426,9 @@
             },
             "resources": [],
             "dependsOn": [
-                "[resourceId('Microsoft.Network/virtualNetworks', parameters('virtualNetworkName'))]"
+                "[resourceId('Microsoft.Network/virtualNetworks', parameters('virtualNetworkName'))]",
+                "[resourceId('Microsoft.Network/loadBalancers', variables('adfsILBName'))]",
+                "[resourceId('Microsoft.Network/loadBalancers', variables('adfsELBName'))]"
             ]
         }
 
