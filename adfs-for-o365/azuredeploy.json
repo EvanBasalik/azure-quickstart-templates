@@ -826,10 +826,10 @@
           "domainName": {
             "value": "[parameters('domainName')]"
           },
-          "adBDCConfigurationFunction": {
+          "BDCConfigurationFunction": {
             "value": "[variables('BDCConfigurationFunction')]"
           },
-          "adBDCConfigurationModulesURL": {
+          "BDCConfigurationModulesURL": {
             "value": "[variables('BDCConfigurationModulesURL')]"
           }
         }
