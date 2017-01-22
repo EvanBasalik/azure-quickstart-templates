@@ -7,7 +7,7 @@
       "metadata": {
         "description": "The name of the new storage account created to store the VMs disks"
       },
-      "defaultValue": "GEN-UNIQUE"
+      "defaultValue": "evanba"
     },
     "storageAccountType": {
       "type": "string",
