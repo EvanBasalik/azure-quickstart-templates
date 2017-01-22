@@ -370,7 +370,6 @@
             },
             "resources": [],
             "dependsOn": [
-                "[resourceId('Microsoft.Network/publicIPAddresses', variables('adfsELBIPAddressName'))]",
                 "[resourceId('Microsoft.Network/virtualNetworks', parameters('virtualNetworkName'))]"
             ]
         }
