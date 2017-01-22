@@ -25,6 +25,13 @@
         "description": "The FQDN of the AD Domain created "
         },
         "defaultValue": "corpeotd.info"},
+    "dnsPrefix": {
+      "type": "string",
+      "metadata": {
+        "description": "The DNS prefix for the public IP address used by the Load Balancer"
+      },
+      "defaultValue": "corpeotd"
+    },
     "adfsServerNamingConvention": {
       "type": "string",
       "minLength": 1,
@@ -127,6 +134,16 @@
       "location": "[resourceGroup().location]",
       "apiVersion": "2015-06-15"
     },
+    {"name": "[variables('adfspublicIPAddressName')]",
+      "type": "Microsoft.Network/publicIPAddresses",
+      "apiVersion": "2016-10-01",
+      "location": "[resourceGroup().location]",
+      "properties": {
+        "publicIPAllocationMethod": "Static",
+        "dnsSettings": {
+          "domainNameLabel": "[parameters('dnsPrefix')]"
+      }}
+    },
         {
       "name": "[variables('adfsLBName')]",
       "type": "Microsoft.Network/loadBalancers",
@@ -152,12 +169,6 @@
           }
         ]
       }
-    },
-        {
-      "name": "adfs-availabilityset",
-      "type": "Microsoft.Compute/availabilitySets",
-      "apiVersion": "2016-03-30",
-      "location": "[resourceGroup().location]"
     },
     {
       "name": "[concat(parameters('adfsServerNamingConvention'),'1','-nic')]",
