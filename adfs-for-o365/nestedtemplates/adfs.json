@@ -153,7 +153,8 @@
       "type": "string",
       "metadata": {
         "description": "IP address for the ADFS load balancer"
-      }
+      },
+      "defaultValue": "10.0.0.200"
     },
     "subnetName": {
       "type": "string",
@@ -321,7 +322,7 @@
                     "dataDisks": []
                 },
                 "osProfile": {
-                    "computerName": "concat(parameters('adfsServerNamingConvention'),'1')]",
+                    "computerName": "[concat(parameters('adfsServerNamingConvention'),'1')]",
                     "adminUsername": "EndoftheDay",
                     "windowsConfiguration": {
                         "provisionVMAgent": true,
