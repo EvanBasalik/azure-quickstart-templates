@@ -114,14 +114,14 @@
     "adfspublicIPAddressName": "adfs-publicIP"
   },
   "resources": [
-        {
+    {
       "name": "adfs-availabilityset",
       "type": "Microsoft.Compute/availabilitySets",
       "location": "[resourceGroup().location]",
       "apiVersion": "2015-06-15"
     },
         {
-      "name": "adfs-loadbalancer",
+      "name": "[variables('adfsLBName')]",
       "type": "Microsoft.Network/loadBalancers",
       "apiVersion": "2016-03-30",
       "location": "[resourceGroup().location]",
