@@ -299,17 +299,7 @@
             "resources": [],
             "dependsOn": []
         },
-            {
-      "name": "[parameters('newStorageAccountName')]",
-      "type": "Microsoft.Storage/storageAccounts",
-      "apiVersion": "2016-05-01",
-      "location": "[resourceGroup().location]",
-      "properties": {
-      },
-      "sku":{"name":"Standard_LRS"},
-      "kind":"Storage"
-    },
-               {
+        {
             "type": "Microsoft.Compute/virtualMachines",
             "name": "[concat(parameters('adfsServerNamingConvention'),'1')]",
             "apiVersion": "2015-06-15",
