@@ -154,7 +154,7 @@
       "location": "[resourceGroup().location]"
     },
     {
-      "name": "[concat(parameters('adfsServerNamingConvention')[copyIndex()],'-nic')]",
+      "name": "[concat(parameters('adfsServerNamingConvention'),'1','-nic')]",
       "copy": {
         "count": 2
       },
@@ -168,7 +168,7 @@
       "properties": {
         "ipConfigurations": [
           {
-            "name": "[concat(parameters('adfsServerNamingConvention')[copyIndex()],'-ip')]",
+            "name": "[concat(parameters('adfsServerNamingConvention'),'1','-ip')]",
             "properties": {
               "privateIPAllocationMethod": "Dynamic",
               "subnet": {
@@ -188,7 +188,7 @@
             "comments": "Join domain - JsonADDomainExtension",
             "apiVersion": "2015-06-15",
             "type": "Microsoft.Compute/virtualMachines/extensions",
-            "name": "[concat(parameters('adfsServerNamingConvention')[copyIndex()],'/joindomain')]",
+            "name": "[concat(parameters('adfsServerNamingConvention'),'1','/joindomain')]",
             "location": "[ResourceGroup().location]",
             "copy": {
                 "name": "vmDomainJoinCopy",
@@ -214,21 +214,18 @@
     {
       "apiVersion": "2016-03-30",
       "type": "Microsoft.Compute/virtualMachines",
-      "copy": {
-        "count":2
-      },
-      "name": "[concat(parameters('adfsServerNamingConvention'),copyIndex())]",
+      "name": "[concat(parameters('adfsServerNamingConvention'),'1')]",
       "location": "[resourceGroup().location]",
       "dependsOn": [
         "[resourceId('Microsoft.Storage/storageAccounts',parameters('newStorageAccountName'))]",       
-        "[resourceId('Microsoft.Network/networkInterfaces',concat('adfsnic',copyIndex()))]"
+        "[resourceId('Microsoft.Network/networkInterfaces',concat('adfsnic','1'))]"
       ],
       "properties": {
         "hardwareProfile": {
           "vmSize": "[parameters('adfsVMSize')]"
         },
         "osProfile": {
-          "computerName": "[concat(parameters('adfsServerNamingConvention'),copyIndex())]",
+          "computerName": "[concat(parameters('adfsServerNamingConvention'),'1')]",
           "adminUsername": "[parameters('adminUsername')]",
           "adminPassword": "[parameters('adminPassword')]"
         },
@@ -242,7 +239,7 @@
           "osDisk": {
             "name": "osdisk",
             "vhd": {
-              "uri": "[concat('http://',parameters('newStorageAccountName'),'.blob.core.windows.net/vhds/',parameters('adfsServerNamingConvention'),copyIndex(),'-disk0.vhd')]"
+              "uri": "[concat('http://',parameters('newStorageAccountName'),'.blob.core.windows.net/vhds/',parameters('adfsServerNamingConvention'),'1','-disk0.vhd')]"
             },
             "caching": "ReadWrite",
             "createOption": "FromImage"
@@ -251,7 +248,7 @@
             {
               "name": "myvm-data-disk1",
               "vhd": {
-                "Uri": "[concat('http://',parameters('newStorageAccountName'),'.blob.core.windows.net/vhds/',parameters('adfsServerNamingConvention'),copyIndex(),'-disk1.vhd')]"
+                "Uri": "[concat('http://',parameters('newStorageAccountName'),'.blob.core.windows.net/vhds/',parameters('adfsServerNamingConvention'),'1','-disk1.vhd')]"
               },
               "caching": "None",
               "createOption": "Empty",
@@ -263,7 +260,7 @@
         "networkProfile": {
           "networkInterfaces": [
             {
-              "id": "[resourceId('Microsoft.Network/networkInterfaces', concat(parameters('adfsServerNamingConvention'),copyIndex(),'-nic'))]"
+              "id": "[resourceId('Microsoft.Network/networkInterfaces', concat(parameters('adfsServerNamingConvention'),'1','-nic'))]"
             }
           ]
         },
