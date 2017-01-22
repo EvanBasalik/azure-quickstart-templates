@@ -281,6 +281,16 @@
             "resources": [],
             "dependsOn": []
         },
+            {
+      "name": "[parameters('newStorageAccountName')]",
+      "type": "Microsoft.Storage/storageAccounts",
+      "apiVersion": "2016-05-01",
+      "location": "[resourceGroup().location]",
+      "properties": {
+      },
+      "sku":{"name":"Standard_LRS"},
+      "kind":"Storage"
+    },
                {
             "type": "Microsoft.Compute/virtualMachines",
             "name": "[concat(parameters('adfsServerNamingConvention'),'1')]",
@@ -335,8 +345,7 @@
                 "[resourceId('Microsoft.Network/networkInterfaces', variables('adfsNICName'))]"
             ]
         },
-               {
-            "comments": "Generalized from resource: '/subscriptions/27b2ee0a-4093-4253-95b5-c595487ad66f/resourceGroups/adfs60/providers/Microsoft.Network/networkInterfaces/adfs1852'.",
+        {
             "type": "Microsoft.Network/networkInterfaces",
             "name": "[variables('adfsNICName')]",
             "apiVersion": "2016-03-30",
