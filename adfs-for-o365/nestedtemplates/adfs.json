@@ -302,13 +302,13 @@
                     "id": "[resourceId('Microsoft.Compute/availabilitySets', 'adfs-availabilityset')]"
                 },
                 "hardwareProfile": {
-                    "vmSize": "Standard_DS1_v2"
+                    "vmSize": "[parameters('adfsVMSize')]"
                 },
                 "storageProfile": {
                     "imageReference": {
-                        "publisher": "MicrosoftWindowsServer",
-                        "offer": "WindowsServer",
-                        "sku": "2012-R2-Datacenter",
+                        "publisher": "[parameters('imagePublisher')]",
+                        "offer": "[parameters('imageOffer')]",
+                        "sku": "[parameters('imageSKU')]",
                         "version": "latest"
                     },
                     "osDisk": {
