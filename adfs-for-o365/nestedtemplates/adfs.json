@@ -155,9 +155,6 @@
     },
     {
       "name": "[concat(parameters('adfsServerNamingConvention'),'1','-nic')]",
-      "copy": {
-        "count": 2
-      },
       "type": "Microsoft.Network/networkInterfaces",
       "apiVersion": "2016-03-30",
       "location": "[resourceGroup().location]",
@@ -190,10 +187,6 @@
             "type": "Microsoft.Compute/virtualMachines/extensions",
             "name": "[concat(parameters('adfsServerNamingConvention'),'1','/joindomain')]",
             "location": "[ResourceGroup().location]",
-            "copy": {
-                "name": "vmDomainJoinCopy",
-                "count": 2
-            },
             "properties": {
                 "publisher": "Microsoft.Compute",
                 "type": "JsonADDomainExtension",
