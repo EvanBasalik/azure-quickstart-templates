@@ -9,40 +9,12 @@
       },
       "defaultValue": "VNet"
     },
-    "virtualNetworkAddressRange": {
-      "type": "string",
-      "metadata": {
-        "Description": "The address range of the new VNET in CIDR format"
-      },
-      "defaultValue": "10.0.0.0/16"
-    },
     "internalsubnetName": {
       "type": "string",
       "metadata": {
         "Description": "The name of the subnet created in the new VNET"
       },
       "defaultValue": "internalsubnet"
-    },
-    "internalsubnetRange": {
-      "type": "string",
-      "metadata": {
-        "Description": "The address range of the subnet created in the new VNET"
-      },
-      "defaultValue": "10.0.0.0/24"
-    },
-    "dmzsubnetName": {
-      "type": "string",
-      "metadata": {
-        "Description": "The name of the subnet created in the new VNET"
-      },
-      "defaultValue": "dmzsubnet"
-    },
-    "dmzsubnetRange": {
-      "type": "string",
-      "metadata": {
-        "Description": "The address range of the subnet created in the new VNET"
-      },
-      "defaultValue": "10.0.1.0/29"
     },
     "newStorageAccountName": {
       "type": "string",
@@ -155,15 +127,7 @@
         "description": "IP address for the ADFS load balancer"
       },
       "defaultValue": "10.0.0.200"
-    },
-    "subnetName": {
-      "type": "string",
-      "metadata": {
-        "description": "Subnet into which to deploy the ADFS servers"
-      },
-      "defaultValue": "internalSubnet"
-    }
-    
+    }    
     },
   "variables": {
     "adfsILBName": "adfsILB",
@@ -186,32 +150,6 @@
     "adfsNICName": "adfs-NIC1"
   },
   "resources": [
-        {"name": "[parameters('virtualNetworkName')]",
-      "type": "Microsoft.Network/virtualNetworks",
-      "location": "[resourceGroup().location]",
-      "apiVersion": "2016-10-01",
-      "properties": {
-        "addressSpace": {
-          "addressPrefixes": [
-            "[parameters('virtualNetworkAddressRange')]"
-          ]
-        },
-        "subnets": [
-          {
-            "name": "[parameters('internalsubnetName')]",
-            "properties": {
-              "addressPrefix": "[parameters('internalsubnetRange')]"
-            }
-          },
-                    {
-            "name": "[parameters('dmzsubnetName')]",
-            "properties": {
-              "addressPrefix": "[parameters('dmzsubnetRange')]"
-            }
-          }
-        ]
-      }
-    },
     {
       "name": "adfs-availabilityset",
       "type": "Microsoft.Compute/availabilitySets",
