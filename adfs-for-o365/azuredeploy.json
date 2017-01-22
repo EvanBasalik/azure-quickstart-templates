@@ -892,15 +892,6 @@
           "subnetName": {
             "value": "[parameters('internalSubnetName')]"
           },
-          "subnetRange": {
-            "value": "[parameters('internalSubnetRange')]"
-          },
-          "DNSServerAddress": {
-            "value": [
-              "[parameters('PDCNicIPAddress')]",
-              "[parameters('BDCNicIPAddress')]"
-            ]
-          },
           "adminUsername":{
             "value":[
             "[parameters('adminUsername')]"
