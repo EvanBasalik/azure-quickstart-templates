@@ -167,18 +167,20 @@
     },
   "variables": {
     "adfsILBName": "adfsILB",
-    "adfsILBFEName": "[concat(variables('adfsILBName'),'BE')]",
-    "adfsILBBEName": "[concat(variables('adfsILBName'),'FE')]",
+    "adfsILBFEName": "[concat(variables('adfsILBName'),'FE')]",
+    "adfsILBBEName": "[concat(variables('adfsILBName'),'BE')]",
     "adfsILBID": "[resourceId('Microsoft.Network/loadBalancers',variables('adfsILBName'))]",
     "adfsILBFEConfigID": "[concat(variables('adfsILBID'),'/frontendIPConfigurations/',variables('adfsILBFEName'))]",
     "adfsILBBEAddressPoolID": "[concat(variables('adfsILBID'),'/backendAddressPools/',variables('adfsILBBEName'))]",
     "adfsILBIPAddressName": "adfs-ILBIP",
+    "adfsILBProbesIDBase": "[concat(variables('adfsILBID'),'/Probes/')]",
     "adfsELBName": "adfsELB",
     "adfsELBFEName": "[concat(variables('adfsELBName'),'FE')]",
     "adfsELBBEName": "[concat(variables('adfsELBName'),'BE')]",
     "adfsELBID": "[resourceId('Microsoft.Network/loadBalancers',variables('adfsELBName'))]",
-    "adfsELBFEConfigID": "[concat(variables('adfsILBID'),'/frontendIPConfigurations/',variables('adfsELBFEName'))]",
-    "adfsELBBEAddressPoolID": "[concat(variables('adfsILBID'),'/backendAddressPools/',variables('adfsELBBEName'))]",
+    "adfsELBFEConfigID": "[concat(variables('adfsELBID'),'/frontendIPConfigurations/',variables('adfsELBFEName'))]",
+    "adfsELBBEAddressPoolID": "[concat(variables('adfsELBID'),'/backendAddressPools/',variables('adfsELBBEName'))]",
+    "adfsELBProbesIDBase": "[concat(variables('adfsELBID'),'/Probes/')]",
     "adfsELBIPAddressName": "adfs-ELBIP",
     "adfsAvailabilitySetName": "adfs-availabilityset",
     "adfsNICName": "adfs-NIC1"
@@ -261,7 +263,7 @@
             "properties": {
                 "frontendIPConfigurations": [
                     {
-                        "name": "LoadBalancerFrontEnd",
+                        "name": "[variables('adfsILBFEName')]",
                         "properties": {
                             "privateIPAddress": "10.0.0.200",
                             "privateIPAllocationMethod": "Static",
@@ -277,7 +279,46 @@
                     }
                 ],
                 "loadBalancingRules": [
-                    
+                    {
+                        "name": "adfs-ILB-balancingrule-80",
+                        "properties": {
+                            "frontendIPConfiguration": {
+                                "id": "[variables('adfsILBFEConfigID')]"
+                            },
+                            "frontendPort": 80,
+                            "backendPort": 80,
+                            "enableFloatingIP": false,
+                            "idleTimeoutInMinutes": 4,
+                            "protocol": "Tcp",
+                            "loadDistribution": "Default",
+                            "backendAddressPool": {
+                                "id": "[variables('adfsILBBEAddressPoolID')]"
+                            },
+                            "probe": {
+                                "id": "[concat(variables('adfsILBProbesIDBase'),'adfs-ILB-probe-80')]"
+                            }
+                        }
+                    },
+                                        {
+                        "name": "adfs-ILB-balancingrule-443",
+                        "properties": {
+                            "frontendIPConfiguration": {
+                                "id": "[variables('adfsILBFEConfigID')]"
+                            },
+                            "frontendPort": 443,
+                            "backendPort": 443,
+                            "enableFloatingIP": false,
+                            "idleTimeoutInMinutes": 4,
+                            "protocol": "Tcp",
+                            "loadDistribution": "Default",
+                            "backendAddressPool": {
+                                "id": "[variables('adfsILBBEAddressPoolID')]"
+                            },
+                            "probe": {
+                                "id": "[concat(variables('adfsILBProbesIDBase'),'adfs-ILB-probe-443')]"
+                            }
+                        }
+                    }
                 ],
                 "probes": [
                     {
