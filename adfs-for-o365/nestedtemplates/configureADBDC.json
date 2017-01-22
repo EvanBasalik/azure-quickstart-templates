@@ -17,10 +17,10 @@
     "domainName": {
       "type": "string"
     },
-    "adBDCConfigurationFunction": {
+    "BDCConfigurationFunction": {
       "type": "string"
     },
-    "adBDCConfigurationModulesURL": {
+    "BDCConfigurationModulesURL": {
       "type": "string"
     }
   },
@@ -36,9 +36,9 @@
         "typeHandlerVersion": "2.21",
         "autoUpgradeMinorVersion": true,
         "settings": {
-          "modulesURL": "[parameters('adBDCConfigurationModulesURL')]",
+          "modulesURL": "[parameters('BDCConfigurationModulesURL')]",
           "wmfVersion": "4.0",
-          "configurationFunction": "[parameters('adBDCConfigurationFunction')]",
+          "configurationFunction": "[parameters('BDCConfigurationFunction')]",
           "properties": {
             "domainName": "[parameters('domainName')]",
             "adminCreds": {
