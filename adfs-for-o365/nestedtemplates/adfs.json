@@ -86,10 +86,7 @@
       "metadata": {
         "description": "Set of bit flags that define the join options. Default value of 3 is a combination of NETSETUP_JOIN_DOMAIN (0x00000001) & NETSETUP_ACCT_CREATE (0x00000002) i.e. will join the domain and create the account on the domain. For more information see https://msdn.microsoft.com/en-us/library/aa392154(v=vs.85).aspx"}
         },
-    "subnetName": {
-       "type": "string",
-       "defaultValue": "internalSubnet"
-      },
+
 
     "imagePublisher": {
       "type": "string",
@@ -115,6 +112,13 @@
       "metadata": {
         "description": "IP address for the ADFS load balancer"
       }
+    },
+    "subnetName": {
+      "type": "string",
+      "metadata": {
+        "description": "Subnet into which to deploy the ADFS servers"
+      },
+      "defaultValue": "internalSubnet"
     }
     
     },
@@ -144,7 +148,7 @@
           "domainNameLabel": "[parameters('dnsPrefix')]"
       }}
     },
-        {
+    {
       "name": "[variables('adfsLBName')]",
       "type": "Microsoft.Network/loadBalancers",
       "apiVersion": "2016-03-30",
@@ -187,7 +191,7 @@
               "privateIPAllocationMethod": "Static",
               "privateIPAddress": "[parameters('adfsLBIPAddress')]",
               "subnet": {
-                "id": "[parameters('SubnetName')]"
+                "id": "[parameters('subnetName')]"
               },
               "loadBalancerBackendAddressPools": [
                 {
