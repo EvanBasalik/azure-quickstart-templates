@@ -2,19 +2,47 @@
   "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
   "contentVersion": "1.0.0.0",
   "parameters": {
-        "virtualNetworkName": {
+      "virtualNetworkName": {
       "type": "string",
       "metadata": {
         "Description": "The name of the Virtual Network to Create"
       },
       "defaultValue": "VNet"
     },
-    "internalsubnetName": {
+    "subnetName": {
       "type": "string",
       "metadata": {
         "Description": "The name of the subnet created in the new VNET"
       },
       "defaultValue": "internalsubnet"
+    },
+        "virtualNetworkAddressRange": {
+      "type": "string",
+      "metadata": {
+        "Description": "The address range of the new VNET in CIDR format"
+      },
+      "defaultValue": "10.0.0.0/16"
+    },
+    "internalsubnetRange": {
+      "type": "string",
+      "metadata": {
+        "Description": "The address range of the subnet created in the new VNET"
+      },
+      "defaultValue": "10.0.0.0/24"
+    },
+    "dmzsubnetName": {
+      "type": "string",
+      "metadata": {
+        "Description": "The name of the subnet created in the new VNET"
+      },
+      "defaultValue": "dmzsubnet"
+    },
+    "dmzsubnetRange": {
+      "type": "string",
+      "metadata": {
+        "Description": "The address range of the subnet created in the new VNET"
+      },
+      "defaultValue": "10.0.1.0/29"
     },
     "newStorageAccountName": {
       "type": "string",
@@ -45,6 +73,13 @@
         "description": "The DNS prefix for the public IP address used by the Load Balancer"
       },
       "defaultValue": "corpeotdadfs3"
+    },
+    "numberofservers": {
+        "type": "int",
+        "metadata": {
+        "description": "The number of ADFS servers in the farm"
+      },
+      "defaultValue": 2
     },
     "adfsServerNamingConvention": {
       "type": "string",
@@ -147,9 +182,133 @@
     "adfsELBProbesIDBase": "[concat(variables('adfsELBID'),'/Probes/')]",
     "adfsELBIPAddressName": "adfs-ELBIP",
     "adfsAvailabilitySetName": "adfs-availabilityset",
-    "adfsNICName": "adfs-NIC1"
+    "adfsNICName": "adfs-NIC",
+    "subnetRef": "[resourceId('Microsoft.Network/virtualNetworks/subnets',parameters('virtualNetworkName'),parameters('subnetName'))]"
   },
   "resources": [
+        {
+      "name": "[parameters('newStorageAccountName')]",
+      "type": "Microsoft.Storage/storageAccounts",
+      "apiVersion": "2016-05-01",
+      "location": "[resourceGroup().location]",
+      "properties": {
+      },
+      "sku":{"name":"Standard_LRS"},
+      "kind":"Storage"
+    },
+        {"name": "[parameters('virtualNetworkName')]",
+      "type": "Microsoft.Network/virtualNetworks",
+      "location": "[resourceGroup().location]",
+      "apiVersion": "2016-10-01",
+      "properties": {
+        "addressSpace": {
+          "addressPrefixes": [
+            "[parameters('virtualNetworkAddressRange')]"
+          ]
+        },
+        "subnets": [
+          {
+            "name": "[parameters('subnetName')]",
+            "properties": {
+              "addressPrefix": "[parameters('internalsubnetRange')]"
+            }
+          },
+                    {
+            "name": "[parameters('dmzsubnetName')]",
+            "properties": {
+              "addressPrefix": "[parameters('dmzsubnetRange')]"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "type": "Microsoft.Network/networkSecurityGroups",
+      "name": "[concat(parameters('subnetName'),'nsg')]",
+      "apiVersion": "2016-03-30",
+      "location": "[resourceGroup().location]",
+      "properties": {
+          "securityRules": [
+              {
+                  "name": "AllowHTTPSfromDMZ",
+                  "properties": {
+                      "protocol": "TCP",
+                      "sourcePortRange": "*",
+                      "destinationPortRange": "443",
+                      "sourceAddressPrefix": "10.1.0.0/30",
+                      "destinationAddressPrefix": "*",
+                      "access": "Allow",
+                      "priority": 1000,
+                      "direction": "Inbound"
+                  }
+              },
+              {
+                  "name": "DenyInternetOutbound",
+                  "properties": {
+                      "protocol": "*",
+                      "sourcePortRange": "*",
+                      "destinationPortRange": "*",
+                      "sourceAddressPrefix": "*",
+                      "destinationAddressPrefix": "Internet",
+                      "access": "Deny",
+                      "priority": 1100,
+                      "direction": "Outbound"
+                  }
+              }
+          ]
+      },
+      "resources": [],
+      "dependsOn": []
+    },
+       {
+      "type": "Microsoft.Network/networkSecurityGroups",
+      "name": "[concat(parameters('dmzsubnetName'),'nsg')]",
+      "apiVersion": "2016-03-30",
+      "location": "[resourceGroup().location]",
+      "properties": {
+          "securityRules": [
+              {
+                  "name": "AllowHTTPSfromDMZ",
+                  "properties": {
+                      "protocol": "Tcp",
+                      "sourcePortRange": "*",
+                      "destinationPortRange": "443",
+                      "sourceAddressPrefix": "10.1.0.0/30",
+                      "destinationAddressPrefix": "*",
+                      "access": "Allow",
+                      "priority": 1000,
+                      "direction": "Inbound"
+                  }
+              },
+              {
+                  "name": "DenyInternetOutbound",
+                  "properties": {
+                      "protocol": "*",
+                      "sourcePortRange": "*",
+                      "destinationPortRange": "*",
+                      "sourceAddressPrefix": "*",
+                      "destinationAddressPrefix": "Internet",
+                      "access": "Deny",
+                      "priority": 1100,
+                      "direction": "Outbound"
+                  }
+              },
+              {
+                  "name": "AllowHTTPSOutbound",
+                  "properties": {
+                      "protocol": "*",
+                      "sourcePortRange": "*",
+                      "destinationPortRange": "443",
+                      "sourceAddressPrefix": "*",
+                      "destinationAddressPrefix": "Internet",
+                      "access": "Allow",
+                      "priority": 1010,
+                      "direction": "Outbound"
+                  }
+              }
+          ]
+      }
+       },
     {
       "name": "adfs-availabilityset",
       "type": "Microsoft.Compute/availabilitySets",
@@ -205,7 +364,7 @@
                             "privateIPAddress": "10.0.0.200",
                             "privateIPAllocationMethod": "Static",
                             "subnet": {
-                                "id": "[concat(resourceId('Microsoft.Network/virtualNetworks', parameters('virtualNetworkName')), '/subnets/',parameters('internalsubnetName'))]"
+                                "id": "[concat(resourceId('Microsoft.Network/virtualNetworks', parameters('virtualNetworkName')), '/subnets/',parameters('subnetName'))]"
                             }
                         }
                     }
@@ -301,9 +460,13 @@
         },
         {
             "type": "Microsoft.Compute/virtualMachines",
-            "name": "[concat(parameters('adfsServerNamingConvention'),'1')]",
+            "name": "[concat(parameters('adfsServerNamingConvention'),copyIndex())]",
             "apiVersion": "2015-06-15",
             "location": "[resourceGroup().location]",
+            "copy": {
+              "name": "VMLoop",
+              "count": "[parameters('numberofservers')]"
+            },
             "properties": {
                 "availabilitySet": {
                     "id": "[resourceId('Microsoft.Compute/availabilitySets', variables('adfsAvailabilitySetName'))]"
@@ -319,17 +482,17 @@
                         "version": "latest"
                     },
                     "osDisk": {
-                        "name": "[concat(parameters('adfsServerNamingConvention'),'osdisk','1')]",
+                        "name": "[concat(parameters('adfsServerNamingConvention'),'osdisk',copyIndex())]",
                         "createOption": "FromImage",
                         "vhd": {
-                            "uri": "[concat('https', '://', parameters('newStorageAccountName'), '.blob.core.windows.net', concat('/vhds/', concat(parameters('adfsServerNamingConvention'),'1'),'.vhd'))]"
+                            "uri": "[concat('https', '://', parameters('newStorageAccountName'), '.blob.core.windows.net', concat('/vhds/', concat(parameters('adfsServerNamingConvention'),copyIndex()),'.vhd'))]"
                         },
                         "caching": "ReadWrite"
                     },
                     "dataDisks": []
                 },
                 "osProfile": {
-                    "computerName": "[concat(parameters('adfsServerNamingConvention'),'1')]",
+                    "computerName": "[concat(parameters('adfsServerNamingConvention'),copyIndex())]",
                     "adminUsername": "EndoftheDay",
                     "windowsConfiguration": {
                         "provisionVMAgent": true,
@@ -341,9 +504,9 @@
                 "networkProfile": {
                     "networkInterfaces": [
                         {
-                            "id": "[resourceId('Microsoft.Network/networkInterfaces', variables('adfsNICName'))]",
+                            "id": "[resourceId('Microsoft.Network/networkInterfaces', concat(variables('adfsNICName'),copyIndex()))]",
                             "networkSecurityGroup": {
-                                "id": "[resourceId('Microsoft.Network/networkSecurityGroups', concat(parameters('internalsubnetName'),'-nsg'))]"
+                                "id": "[resourceId('Microsoft.Network/networkSecurityGroups', concat(parameters('subnetName'),'-nsg'))]"
                               }           
                         }
                     ]
@@ -393,7 +556,32 @@
                 "[resourceId('Microsoft.Network/loadBalancers', variables('adfsILBName'))]",
                 "[resourceId('Microsoft.Network/loadBalancers', variables('adfsELBName'))]"
             ]
+        },
+        {
+          "type": "Microsoft.Network/networkInterfaces",
+          "name": "[concat(variables('adfsNICname'), copyindex())]",
+          "apiVersion": "2016-03-30",
+          "location": "[resourceGroup().location]",
+          "copy": {
+            "name": "nicLoop",
+            "count": "[parameters('numberofservers')]"
+          },
+          "dependsOn": [
+            "[parameters('virtualNetworkName')]"
+          ],
+          "properties": {
+            "ipConfigurations": [
+              {
+                "name": "ipconfig1",
+                "properties": {
+                  "privateIPAllocationMethod": "Dynamic",
+                  "subnet": {
+                    "id": "[variables('subnetRef')]"
+                  }
+                }
+              }
+            ]
+          }
         }
-
   ]
 }
