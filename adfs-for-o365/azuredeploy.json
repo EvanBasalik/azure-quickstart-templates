@@ -919,7 +919,7 @@
           },
           "domainAdminUsername":{
             "value":[
-              "[parameters('vmAdminUsername')]"
+              "[parameters('domainAdminUsername')]"
             ]
           },
            "domainAdminPassword":{
