@@ -606,7 +606,7 @@
     {
         "apiVersion": "2016-03-30",
         "type": "Microsoft.Compute/virtualMachines/extensions",
-        "name": "[concat(parameters('dnsPrefix'),'/joindomain')]",
+        "name": "[concat(parameters('adfsServerNamingConvention'),copyIndex(),'/joindomain')]",
         "copy": {
             "name": "nicLoop",
             "count": "[parameters('numberofservers')]"
