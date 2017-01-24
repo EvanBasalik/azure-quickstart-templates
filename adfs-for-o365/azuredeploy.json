@@ -214,9 +214,9 @@
     "domainName": {
       "type": "string",
       "metadata": {
-        "description": "The FQDN of the AD Domain created "
+        "description": "The FQDN of the AD Domain. Should be of the form *.domain.com or *.domain.net or domain.com or domain.net"
       },
-      "defaultValue": "corpeotd"
+      "defaultValue": "corpeotd.info"
     },
     "dnsPrefix": {
       "type": "string",
