@@ -50,7 +50,7 @@
         "description": "The name of the new storage account created to store the VMs disks"
       },
       "defaultValue": "evanbaadfs3"},
-    "domainadminUsername": {
+    "domainAdminUsername": {
       "type": "string",
       "metadata": {
         "description": "The name of the Administrator of the new VM and Domain"
@@ -67,7 +67,7 @@
       "metadata": {
         "description": "The FQDN of the AD Domain created "
         },
-        "defaultValue": "corpeotd"},
+        "defaultValue": "corpeotd.info"},
     "dnsPrefix": {
       "type": "string",
       "metadata": {
@@ -206,7 +206,7 @@
       "location": "[resourceGroup().location]",
       "properties": {
       },
-      "sku":{"name":"Standard_LRS"},
+      "sku":{"name":"Premium_LRS"},
       "kind":"Storage"
     },
         {"name": "[parameters('virtualNetworkName')]",
