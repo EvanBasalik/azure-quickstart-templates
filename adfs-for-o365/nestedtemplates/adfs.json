@@ -513,7 +513,7 @@
             },
             "osProfile": {
                 "computerName": "[concat(parameters('adfsServerNamingConvention'),copyIndex())]",
-                "adminUsername": "parameters('vmAdminUsername')",
+                "adminUsername": "[parameters('vmAdminUsername')]",
                 "windowsConfiguration": {
                     "provisionVMAgent": true,
                     "enableAutomaticUpdates": true
