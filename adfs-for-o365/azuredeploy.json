@@ -7,7 +7,7 @@
       "metadata": {
         "description": "The name of the new storage account created to store the VMs disks"
       },
-      "defaultValue": "evanba"
+      "defaultValue": "evanbaadfs3"
     },
     "storageAccountType": {
       "type": "string",
@@ -124,17 +124,29 @@
       },
       "defaultValue": "BDC"
     },
-    "adminUsername": {
+    "domainAdminUsername": {
       "type": "string",
       "metadata": {
         "description": "The name of the Administrator of the new VM and Domain"
       },
       "defaultValue": "adfsforo365"
     },
-    "adminPassword": {
+    "domainAdminPassword": {
       "type": "securestring",
       "metadata": {
         "description": "The password for the Administrator account of the new VM and Domain"
+      }
+    },
+    "vmAdminUsername": {
+      "type": "string",
+      "metadata": {
+        "description": "The name of the administrator of member servers. Exclusion list: 'admin','administrator"
+      }
+    },
+    "vmAdminPassword": {
+      "type": "securestring",
+      "metadata": {
+        "description": "The password for the administrator account of the member servers"
       }
     },
     "dcVMSize": {
@@ -550,8 +562,8 @@
         },
         "osProfile": {
           "computerName": "[parameters('PDCVMName')]",
-          "adminUsername": "[parameters('adminUsername')]",
-          "adminPassword": "[parameters('adminPassword')]"
+          "adminUsername": "[parameters('domainAdminUsername')]",
+          "adminPassword": "[parameters('domainAdminPassword')]"
         },
         "storageProfile": {
           "imageReference": {
@@ -609,14 +621,14 @@
               "Properties": {
                 "DomainName": "[parameters('domainName')]",
                 "AdminCreds": {
-                  "UserName": "[parameters('adminUserName')]",
+                  "UserName": "[parameters('domainAdminUserName')]",
                   "Password": "PrivateSettingsRef:AdminPassword"
                 }
               }
             },
             "protectedSettings": {
               "Items": {
-                "AdminPassword": "[parameters('adminPassword')]"
+                "AdminPassword": "[parameters('domainAdminPassword')]"
               }
             }
           }
@@ -733,8 +745,8 @@
         },
         "osProfile": {
           "computerName": "[parameters('BDCVMName')]",
-          "adminUsername": "[parameters('adminUsername')]",
-          "adminPassword": "[parameters('adminPassword')]"
+          "adminUsername": "[parameters('domainAdminUsername')]",
+          "adminPassword": "[parameters('domainAdminPassword')]"
         },
         "storageProfile": {
           "imageReference": {
@@ -819,10 +831,10 @@
             "value": "[resourceGroup().location]"
           },
           "adminUsername": {
-            "value": "[parameters('adminUsername')]"
+            "value": "[parameters('domainAdminUsername')]"
           },
           "adminPassword": {
-            "value": "[parameters('adminPassword')]"
+            "value": "[parameters('domainAdminPassword')]"
           },
           "domainName": {
             "value": "[parameters('domainName')]"
@@ -895,14 +907,24 @@
           "subnetName": {
             "value": "[parameters('internalSubnetName')]"
           },
-          "adminUsername":{
+          "vmadminUsername":{
             "value":[
-            "[parameters('adminUsername')]"
+            "[parameters('vmadminUsername')]"
             ]
           },
-          "adminpassword":{
+          "vmadminpassword":{
             "value":[
-              "[parameters('adminPassword')]"
+              "[parameters('vmadminPassword')]"
+            ]
+          },
+          "domainAdminUsername":{
+            "value":[
+              "[parameters('vmAdminUsername')]"
+            ]
+          },
+           "domainAdminPassword":{
+            "value":[
+              "[parameters('domainAdminPassword')]"
             ]
           }
         }
