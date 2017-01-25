@@ -4,7 +4,7 @@ This template will deploy a primary DC, a backup DC, n ADFS servers, n WAPs, a j
 
 Click the button below to deploy
 
-<a href="https://ms.portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2FEvanBasalik%2Fazure-quickstart-templates%2Fadfs-for-o365%2Fazuredeploy.json" target="_blank">
+<a href="https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2FEvanBasalik%2Fazure-quickstart-templates%2Fmaster%2Fadfs-for-o365%2Fazuredeploy.json" target="_blank">
     <img src="http://azuredeploy.net/deploybutton.png"/>
 </a>
 <a href="http://armviz.io/#/?load=https://ms.portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2FEvanBasalik%2Fazure-quickstart-templates%2Fmaster%2Fadfs-for-o365%2Fazuredeploy.json" target="_blank">
