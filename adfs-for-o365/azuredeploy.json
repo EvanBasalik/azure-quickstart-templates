@@ -887,49 +887,6 @@
           }
         }
       }
-    ,
-    ,
-    {"name": "deployADFS",
-      "type": "Microsoft.Resources/deployments",
-      "apiVersion": "2016-09-01",
-      "dependsOn": [
-        "Microsoft.Resources/deployments/UpdateVNetDNS2"
-      ],
-      "properties": {
-        "mode": "Incremental",
-        "templateLink": {
-          "uri": "[variables('adfsTemplateUri')]",
-          "contentVersion": "1.0.0.0"
-        },
-        "parameters": {
-          "domainJoinOptions":{
-            "value":"[parameters('domainJoinOptions')]"
-          },
-          "subnetName": {
-            "value": "[parameters('internalSubnetName')]"
-          },
-          "vmadminUsername":{
-            "value":[
-            "[parameters('vmadminUsername')]"
-            ]
-          },
-          "vmadminpassword":{
-            "value":[
-              "[parameters('vmadminPassword')]"
-            ]
-          },
-          "domainAdminUsername":{
-            "value":[
-              "[parameters('domainAdminUsername')]"
-            ]
-          },
-           "domainAdminPassword":{
-            "value":[
-              "[parameters('domainAdminPassword')]"
-            ]
-          }
-        }
-      }
-    }    
+    }  
   ]
 }
