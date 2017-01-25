@@ -60,6 +60,9 @@
             "[parameters('virtualNetworkAddressRange')]"
           ]
         },
+        "dhcpOptions": {
+          "dnsServers": "[parameters('DNSServerAddress')]"
+        },
         "subnets": [
           {
             "name": "[parameters('internalsubnetName')]",
