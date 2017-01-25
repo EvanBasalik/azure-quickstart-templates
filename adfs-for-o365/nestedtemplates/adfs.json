@@ -175,7 +175,12 @@
         "description": "IP address for the ADFS load balancer"
       },
       "defaultValue": "10.0.0.200"
-    }    
+    },
+    "DNSServers":
+    {
+        "type": "array",
+        "defaultValue": "10.0.0.4,10.0.0.5"
+    }   
     },
   "variables": {
     "adfsILBName": "adfsILB",
@@ -542,23 +547,25 @@
                 {
                     "name": "ipconfig1",
                     "properties": {
-                        "privateIPAddress": "10.0.0.4",
                         "privateIPAllocationMethod": "Dynamic",
                         "subnet": {
                             "id": "[concat(resourceId('Microsoft.Network/virtualNetworks', parameters('virtualNetworkName')), '/subnets/internalsubnet')]"
-                        },
-                            "loadBalancerBackendAddressPools": [
+                    },
+                    "loadBalancerBackendAddressPools": [
                             {
                                 "id": "[concat(resourceId('Microsoft.Network/loadBalancers', variables('adfsILBName')), concat('/backendAddressPools/',variables('adfsILBBEName')))]"
                             },
                             {
                                 "id": "[concat(resourceId('Microsoft.Network/loadBalancers', variables('adfsELBName')), concat('/backendAddressPools/',variables('adfsELBBEName')))]"
                             }
-                            ]
+                        ]
                     }
                 }
             ],
-            "enableIPForwarding": false
+            "enableIPForwarding": false,
+            "dnsSettings": {
+                "dnsServers": "[parameters('DNSServers')]"
+                }
         },
         "resources": [],
         "dependsOn": [
@@ -590,7 +597,12 @@
                 }
             }
             }
-        ]
+        ],
+        "dnsSettings": {
+            "dnsServers": [
+                "10.0.0.4"
+                ]
+            }     
         }
     },
     {
