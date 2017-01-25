@@ -175,14 +175,10 @@
         "description": "IP address for the ADFS load balancer"
       },
       "defaultValue": "10.0.0.200"
-    },
-    "DNSServers":
-    {
-        "type": "array",
-        "defaultValue": "10.0.0.4,10.0.0.5"
-    }   
+    }
     },
   "variables": {
+    "DNSServers": "[concat('10.0.0.4',',','10.0.0.5')]",
     "adfsILBName": "adfsILB",
     "adfsILBFEName": "[concat(variables('adfsILBName'),'FE')]",
     "adfsILBBEName": "[concat(variables('adfsILBName'),'BE')]",
@@ -564,7 +560,7 @@
             ],
             "enableIPForwarding": false,
             "dnsSettings": {
-                "dnsServers": "[parameters('DNSServers')]"
+                "dnsServers": "[variables('DNSServers')]"
                 }
         },
         "resources": [],
