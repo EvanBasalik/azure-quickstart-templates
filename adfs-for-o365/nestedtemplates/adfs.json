@@ -140,7 +140,7 @@
       "metadata": {
         "description": "The size of the ADFS VMs created"
       },
-      "defaultValue": "Standard_DS2_v2"
+      "defaultValue": "Standard_DS1_v2"
       },
     "domainJoinOptions": {
       "type": "int",
@@ -558,10 +558,7 @@
                     }
                 }
             ],
-            "enableIPForwarding": false,
-            "dnsSettings": {
-                "dnsServers": "[variables('DNSServers')]"
-                }
+            "enableIPForwarding": false
         },
         "resources": [],
         "dependsOn": [

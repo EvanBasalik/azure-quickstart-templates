@@ -372,6 +372,18 @@
         }
       }
     },
+        {
+      "name": "[parameters('publicIPAddressName')]",
+      "type": "Microsoft.Network/publicIPAddresses",
+      "apiVersion": "2016-10-01",
+      "location": "[resourceGroup().location]",
+      "properties": {
+        "publicIPAllocationMethod": "[parameters('publicIPAddressType')]",
+        "dnsSettings": {
+          "domainNameLabel": "[parameters('dnsPrefix')]"
+        }
+      }
+    },
     {
       "name": "[variables('dc-AvailabilitySetName')]",
       "type": "Microsoft.Compute/availabilitySets",
