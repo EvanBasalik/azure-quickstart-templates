@@ -526,9 +526,8 @@
         },
         "protectedsettings": {
             "Password": "[parameters('adminPassword')]"
+            }   
         }
-    }
-
-     },
+     }
   ]
 }
