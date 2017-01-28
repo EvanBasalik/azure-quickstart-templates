@@ -347,7 +347,9 @@
     "ADFSRDPNAT": "ADFSRDP",
     "adLBName": "RDPLoadBalancer",
     "PDCRDPNATRuleID": "[concat(variables('adlbID'),'/inboundNatRules/',variables('PDCRDPNAT'))]",
-    "BDCRDPNATRuleID": "[concat(variables('adlbID'),'/inboundNatRules/',variables('BDCRDPNAT'))]"
+    "BDCRDPNATRuleID": "[concat(variables('adlbID'),'/inboundNatRules/',variables('BDCRDPNAT'))]",
+    "ADFSConfigurationModulesURL": "[concat(parameters('assetLocation'),'/DSC/ConfigureADFS.ps1.zip')]"
+
   },
   "resources": [
     {
