@@ -44,12 +44,6 @@
       },
       "defaultValue": "10.0.1.0/29"
     },
-    "newStorageAccountName": {
-      "type": "string",
-      "metadata": {
-        "description": "The name of the new storage account created to store the VMs disks"
-      },
-      "defaultValue": "evanbaadfs3"},
     "domainAdminUsername": {
       "type": "string",
       "metadata": {
@@ -178,7 +172,7 @@
     }
     },
   "variables": {
-    "adfsStorageAccountName":"[concat('adfs',uniqueString(resourceGroup().id))]",
+    "adfsStorageAccountName":"[concat('adfs','-',uniqueString(resourceGroup().id))]",
     "adfsILBName": "adfsILB",
     "adfsILBFEName": "[concat(variables('adfsILBName'),'FE')]",
     "adfsILBBEName": "[concat(variables('adfsILBName'),'BE')]",
@@ -201,7 +195,7 @@
   },
   "resources": [
         {
-      "name": "[parameters('newStorageAccountName')]",
+      "name": "[variables('adfsStorageAccountName')]",
       "type": "Microsoft.Storage/storageAccounts",
       "apiVersion": "2016-05-01",
       "location": "[resourceGroup().location]",
@@ -412,7 +406,7 @@
                     "name": "[concat(parameters('adfsServerNamingConvention'),'osdisk',copyIndex())]",
                     "createOption": "FromImage",
                     "vhd": {
-                        "uri": "[concat('https', '://', parameters('newStorageAccountName'), '.blob.core.windows.net', concat('/vhds/', concat(parameters('adfsServerNamingConvention'),copyIndex()),'.vhd'))]"
+                        "uri": "[concat('https', '://', variables('adfsStorageAccountName'), '.blob.core.windows.net', concat('/vhds/', concat(parameters('adfsServerNamingConvention'),copyIndex()),'.vhd'))]"
                     },
                     "caching": "ReadWrite"
                 },
@@ -439,7 +433,7 @@
         "resources": [],
         "dependsOn": [
             "[resourceId('Microsoft.Compute/availabilitySets', variables('adfsAvailabilitySetName'))]",
-            "[resourceId('Microsoft.Storage/storageAccounts', parameters('newStorageAccountName'))]",
+            "[resourceId('Microsoft.Storage/storageAccounts', variables('adfsStorageAccountName'))]",
             "[resourceId('Microsoft.Network/networkInterfaces', variables('adfsNICName'))]"
         ]
     },
@@ -520,12 +514,12 @@
         "autoUpgradeMinorVersion": true,
         "settings": {
             "Name": "[parameters('domainName')]",
-            "User": "[parameters('adminUsername')]",
+            "User": "[parameters('vmAdminUsername')]",
             "Restart": "true",
             "Options": "[parameters('domainJoinOptions')]"
         },
         "protectedsettings": {
-            "Password": "[parameters('adminPassword')]"
+            "Password": "[parameters('vmAdminPassword')]"
             }   
         }
      }
