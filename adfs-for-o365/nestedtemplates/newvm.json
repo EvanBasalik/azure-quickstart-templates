@@ -74,7 +74,7 @@
       "metadata": {
           "description": "Naming convention for ADFS nodes. For example, input 'ADFS' if you want them to be named ADFS1, ADFS2"
       },
-      "defaultValue": "ADFSa"},
+      "defaultValue": "ADFS"},
     "adfsVMSize": {
       "type": "string",
       "allowedValues": [
@@ -166,7 +166,8 @@
     }
   },
   "variables": {
-    "adfsStorageAccountName":"[concat('adfs',uniqueString(resourceGroup().id))]",
+    "adfsStorageAccountName":"[concat('adfs'),uniqueString(resourceGroup().id))]",
+    "adfsVMName": "[parameters('adfsServerNamingConvention')]",
     "adfsILBName": "adfs-ILB",
     "adfsILBFEName": "[concat(variables('adfsILBName'),'FE')]",
     "adfsILBBEName": "[concat(variables('adfsILBName'),'BE')]",
@@ -362,7 +363,7 @@
             "autoUpgradeMinorVersion": true,
             "settings": {
                 "Name": "[parameters('domainName')]",
-                "User": "[parameters('domainAdminUsername')]",
+                "User": "[concat(parameters('domainName'),'\\',parameters('domainAdminUsername'))]",
                 "Restart": "true",
                 "Options": "[parameters('domainJoinOptions')]"
             },
