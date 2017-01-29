@@ -26,13 +26,13 @@
     "domainAdminUsername": {
       "type": "string",
       "metadata": {
-        "description": "The name of the Administrator of the new VM and Domain"
+        "description": "The name of the Administrator of the Domain"
       },
       "defaultValue": "adfsforo365"},
     "domainAdminPassword": {
       "type": "securestring",
       "metadata": {
-        "description": "The password for the Administrator account of the new VM and Domain"
+        "description": "The password for the Administrator account of the Domain"
       }
         },
     "domainName": {
@@ -51,14 +51,14 @@
     "vmAdminUsername": {
       "type": "string",
       "metadata": {
-        "description": "The name of the administrator of the new VM and the domain. Exclusion list: 'admin','administrator"
+        "description": "The name of the administrator of the new VM. Exclusion list: 'admin','administrator"
       },
 			"defaultValue": "adfsVMAdmin"
     },
     "vmAdminPassword": {
       "type": "securestring",
       "metadata": {
-        "description": "The password for the administrator account of the new VM and the domain"
+        "description": "The password for the administrator account of the new VM"
       }
     },
     "numberofservers": {
@@ -186,9 +186,16 @@
     "adfsAvailabilitySetName": "adfs-availabilityset",
     "adfsNICName": "adfs-NIC",
     "vnetID": "[resourceId(parameters('existingVirtualNetworkResourceGroup'), 'Microsoft.Network/virtualNetworks', parameters('existingVirtualNetworkName'))]",
-    "subnetRef": "[concat(variables('vnetID'),'/subnets/', parameters('existingSubnetName'))]"
+    "subnetRef": "[concat(variables('vnetID'),'/subnets/', parameters('existingSubnetName'))]",
+    "adfsPublicIPName": "adfs-publicIP"
   },
   "resources": [
+   {"type": "Microsoft.Compute/availabilitySets",
+        "name": "[variables('adfsAvailabilitySetName')]",
+        "apiVersion": "2015-06-15",
+        "location": "[resourceGroup().location]",
+        "properties": {}
+    },
     {"type": "Microsoft.Storage/storageAccounts",
         "name": "[concat(variables('adfsStorageAccountName'), copyindex())]",
         "apiVersion": "2015-06-15",
@@ -199,7 +206,20 @@
         "location": "[resourceGroup().location]",
         "properties": {
         "accountType": "[parameters('storageAccountType')]"
-    }
+        }
+    },
+    {
+        "apiVersion": "2016-03-30",
+        "type": "Microsoft.Network/publicIPAddresses",
+        "name": "[concat(variables('adfsPublicIPName'), copyindex())]",
+        "copy": {
+            "name": "publicIPLoop",
+            "count": "[parameters('numberofservers')]"
+        },
+        "location": "[resourceGroup().location]",
+        "properties": {
+            "publicIPAllocationMethod": "Dynamic"
+        }
     },
     {"type": "Microsoft.Network/networkInterfaces",
         "name": "[concat(variables('adfsNICName'), copyindex())]",
@@ -210,6 +230,7 @@
             "count": "[parameters('numberofservers')]"
         },
       "dependsOn": [
+           "[resourceId('Microsoft.Network/publicIPAddresses/', concat(variables('adfsPublicIPName'), copyindex()))]"
       ],
       "properties": {
         "ipConfigurations": [
@@ -218,7 +239,10 @@
             "properties": {
               "privateIPAllocationMethod": "Dynamic",
               "subnet": {
-                "id": "[variables('subnetRef')]"
+                "id": "[variables('subnetRef')]",
+                "publicIPAddress": {
+                    "id": "[resourceId('Microsoft.Network/publicIPAddresses', concat(variables('adfsPublicIPName'), copyindex()))]"
+                }
               }
             }
           }
@@ -235,9 +259,13 @@
         },
         "dependsOn": [
 			"[resourceId('Microsoft.Storage/storageAccounts',concat(variables('adfsStorageAccountName'),copyindex()))]",
-            "[resourceId('Microsoft.Network/networkInterfaces/', concat(variables('adfsNICName'), copyindex()))]"
+            "[resourceId('Microsoft.Network/networkInterfaces/', concat(variables('adfsNICName'), copyindex()))]",
+            "[resourceId('Microsoft.Compute/availabilitySets', variables('adfsAvailabilitySetName'))]"
         ],
         "properties": {
+         "availabilitySet": {
+                "id": "[resourceId('Microsoft.Compute/availabilitySets', variables('adfsAvailabilitySetName'))]"
+            },
         "hardwareProfile": {
           "vmSize": "[parameters('adfsVMSize')]"
         },
@@ -265,7 +293,7 @@
         "networkProfile": {
           "networkInterfaces": [
             {
-              "id": "[resourceId('Microsoft.Network/networkInterfaces/', concat(variables('adfsNICName'), copyindex())]"
+              "id": "[resourceId('Microsoft.Network/networkInterfaces/', concat(variables('adfsNICName'), copyindex()))]"
             }
           ]
         }
@@ -282,6 +310,42 @@
         "resources": [],
         "dependsOn": []
     },
+    {
+    "type": "Microsoft.Network/loadBalancers",
+    "name": "[variables('adfsILBName')]",
+    "apiVersion": "2016-03-30",
+    "location": "[resourceGroup().location]",
+    "properties": {
+        "frontendIPConfigurations": [
+            {
+                "name": "[variables('adfsILBFEName')]",
+                "properties": {
+                    "privateIPAllocationMethod": "Dynamic",
+                    "subnet": {
+                        "id": "[variables('subnetRef')]"
+                    }
+                }
+            }
+        ],
+        "backendAddressPools": [
+            {
+                "name": "[variables('adfsILBFEName')]"
+            }
+        ],
+        "loadBalancingRules": [
+            
+
+        ],
+        "probes": [
+
+        ],
+        "inboundNatRules": [],
+        "outboundNatRules": [],
+        "inboundNatPools": []
+    },
+    "resources": [],
+    "dependsOn": []
+},
     {"type": "Microsoft.Compute/virtualMachines/extensions",
         "name": "[concat(parameters('adfsServerNamingConvention'),copyIndex(),'/joindomain')]",
         "comments": "Join domain - JsonADDomainExtension",
@@ -298,12 +362,12 @@
             "autoUpgradeMinorVersion": true,
             "settings": {
                 "Name": "[parameters('domainName')]",
-                "User": "[parameters('vmAdminUsername')]",
+                "User": "[parameters('domainAdminUsername')]",
                 "Restart": "true",
                 "Options": "[parameters('domainJoinOptions')]"
             },
         "protectedsettings": {
-            "Password": "[parameters('vmAdminPassword')]"
+            "Password": "[parameters('domainAdminPassword')]"
             }   
         },
         "dependsOn":[
