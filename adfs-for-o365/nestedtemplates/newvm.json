@@ -239,10 +239,10 @@
             "properties": {
               "privateIPAllocationMethod": "Dynamic",
               "subnet": {
-                "id": "[variables('subnetRef')]",
-                "publicIPAddress": {
-                    "id": "[resourceId('Microsoft.Network/publicIPAddresses', concat(variables('adfsPublicIPName'), copyindex()))]"
-                }
+                "id": "[variables('subnetRef')]"
+                },
+             "publicIPAddress": {
+                "id": "[resourceId('Microsoft.Network/publicIPAddresses', concat(variables('adfsPublicIPName'), copyindex()))]"
               }
             }
           }
