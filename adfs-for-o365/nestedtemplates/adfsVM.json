@@ -232,7 +232,8 @@
             "count": "[parameters('numberofservers')]"
         },
       "dependsOn": [
-           "[resourceId('Microsoft.Network/publicIPAddresses/', concat(variables('adfsPublicIPName'), copyindex()))]"
+           "[resourceId('Microsoft.Network/publicIPAddresses/', concat(variables('adfsPublicIPName'), copyindex()))]",
+           "[resourceId('Microsoft.Network/loadBalancers/',variables('adfsILBName'))]"
       ],
       "properties": {
         "ipConfigurations": [
