@@ -1,0 +1,291 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+	"existingVirtualNetworkName": {
+      "type": "string",
+      "metadata": {
+        "Description": "The name of the existing virtual network"
+      },
+      "defaultValue": "VNET"
+    },
+    "existingSubnetName": {
+      "type": "string",
+      "metadata": {
+        "Description": "The ID of the existing subnet in the existing virtual network"
+      },
+      "defaultValue": "dmzsubnet"
+    },
+	"existingVirtualNetworkResourceGroup":{
+      "type": "string",
+      "metadata": {
+        "Description": "The resource group of the existing VNET"
+      },
+      "defaultValue": "adfs3"
+    },
+    "domainAdminUsername": {
+      "type": "string",
+      "metadata": {
+        "description": "The name of the Administrator of the Domain"
+      },
+      "defaultValue": "adfsforo365"},
+    "domainAdminPassword": {
+      "type": "securestring",
+      "metadata": {
+        "description": "The password for the Administrator account of the Domain"
+      }
+        },
+    "domainName": {
+      "type": "string",
+      "metadata": {
+        "description": "The FQDN of the AD Domain created "
+        },
+        "defaultValue": "corpeotd.info"},
+    "dnsPrefix": {
+      "type": "string",
+      "metadata": {
+        "description": "The DNS prefix for the public IP address used by the Load Balancer"
+      },
+      "defaultValue": "corpeotdadfs3"
+    },
+    "vmAdminUsername": {
+      "type": "string",
+      "metadata": {
+        "description": "The name of the administrator of the new VM. Exclusion list: 'admin','administrator"
+      },
+			"defaultValue": "wapVMAdmin"
+    },
+    "vmAdminPassword": {
+      "type": "securestring",
+      "metadata": {
+        "description": "The password for the administrator account of the new VM"
+      }
+    },
+    "numberofservers": {
+        "type": "int",
+        "metadata": {
+        "description": "The number of WAP servers in the farm"
+      },
+      "defaultValue": 1
+    },
+    "wapServerNamingConvention": {
+      "type": "string",
+      "minLength": 1,
+      "metadata": {
+          "description": "Naming convention for WAP nodes. For example, input 'WAP' if you want them to be named WAP0, WAP1"
+      },
+      "defaultValue": "WAP"},
+    "wapVMSize": {
+      "type": "string",
+      "allowedValues": [
+        "Standard_D1",
+        "Standard_DS1",
+        "Standard_D2",
+        "Standard_DS2",
+        "Standard_D3",
+        "Standard_DS3",
+        "Standard_D4",
+        "Standard_DS4",
+        "Standard_D11",
+        "Standard_DS11",
+        "Standard_D12",
+        "Standard_DS12",
+        "Standard_D13",
+        "Standard_DS13",
+        "Standard_D14",
+        "Standard_DS14",
+        "Standard_D1_v2",
+        "Standard_DS1_v2",
+        "Standard_D2_v2",
+        "Standard_DS2_v2",
+        "Standard_D3_v2",
+        "Standard_DS3_v2",
+        "Standard_D4_v2",
+        "Standard_DS4_v2",
+        "Standard_D11_v2",
+        "Standard_DS11_v2",
+        "Standard_D12_v2",
+        "Standard_DS12_v2",
+        "Standard_D13_v2",
+        "Standard_DS13_v2",
+        "Standard_D14_v2",
+        "Standard_DS14_v2"
+      ],
+      "metadata": {
+        "description": "The size of the WAP VMs created"
+      },
+      "defaultValue": "Standard_DS1_v2"
+      },
+    "domainJoinOptions": {
+      "type": "int",
+      "defaultValue": 3,
+      "metadata": {
+        "description": "Set of bit flags that define the join options. Default value of 3 is a combination of NETSETUP_JOIN_DOMAIN (0x00000001) & NETSETUP_ACCT_CREATE (0x00000002) i.e. will join the domain and create the account on the domain. For more information see https://msdn.microsoft.com/en-us/library/aa392154(v=vs.85).aspx"}
+        },
+
+
+    "imagePublisher": {
+      "type": "string",
+      "defaultValue": "MicrosoftWindowsServer",
+      "metadata": {
+        "description": "Image Publisher"
+      }},
+    "imageOffer": {
+      "type": "string",
+      "defaultValue": "WindowsServer",
+      "metadata": {
+        "description": "Image Offer"
+      }},
+    "imageSKU": {      
+      "type": "string",
+      "defaultValue": "2012-R2-Datacenter",
+      "metadata": {
+        "description": "Image SKU"
+      }
+		},
+	"storageAccountType": {
+      "type": "string",
+      "allowedValues": [
+        "Standard_LRS",
+        "Standard_GRS",
+        "Standard_RAGRS",
+        "Premium_LRS"
+      ],
+      "metadata": {
+        "description": "The type of the Storage Account created"
+      },
+      "defaultValue": "Premium_LRS"
+    }
+  },
+  "variables": {
+    "wapStorageAccountName":"[concat('wap'),uniqueString(resourceGroup().id))]",
+    "wapVMName": "[parameters('wapServerNamingConvention')]",
+    "wapELBName": "wapELB",
+    "wapELBFEName": "[concat(variables('wapELBName'),'FE')]",
+    "wapELBBEName": "[concat(variables('wapELBName'),'BE')]",
+    "wapELBID": "[resourceId('Microsoft.Network/loadBalancers',variables('wapELBName'))]",
+    "wapELBFEConfigID": "[concat(variables('wapELBID'),'/frontendIPConfigurations/',variables('wapELBFEName'))]",
+    "wapELBBEAddressPoolID": "[concat(variables('wapELBID'),'/backendAddressPools/',variables('wapELBBEName'))]",
+    "wapELBProbesIDBase": "[concat(variables('wapELBID'),'/Probes/')]",
+    "wapELBIPAddressName": "wap-ELBIP",
+    "wapAvailabilitySetName": "wap-availabilityset",
+    "wapNICName": "wap-NIC",
+    "vnetID": "[resourceId(parameters('existingVirtualNetworkResourceGroup'), 'Microsoft.Network/virtualNetworks', parameters('existingVirtualNetworkName'))]",
+    "subnetRef": "[concat(variables('vnetID'),'/subnets/', parameters('existingSubnetName'))]",
+    "wapPublicIPName": "wap-publicIP"
+  },
+  "resources": [
+   {"type": "Microsoft.Compute/availabilitySets",
+        "name": "[variables('wapAvailabilitySetName')]",
+        "apiVersion": "2015-06-15",
+        "location": "[resourceGroup().location]",
+        "properties": {}
+    },
+    {"type": "Microsoft.Storage/storageAccounts",
+        "name": "[concat(variables('wapStorageAccountName'), copyindex())]",
+        "apiVersion": "2015-06-15",
+        "copy": {
+            "name": "storageAccountLoop",
+            "count": "[parameters('numberofservers')]"
+        },
+        "location": "[resourceGroup().location]",
+        "properties": {
+        "accountType": "[parameters('storageAccountType')]"
+        }
+    },
+    {
+        "apiVersion": "2016-03-30",
+        "type": "Microsoft.Network/publicIPAddresses",
+        "name": "[concat(variables('wapPublicIPName'), copyindex())]",
+        "copy": {
+            "name": "publicIPLoop",
+            "count": "[parameters('numberofservers')]"
+        },
+        "location": "[resourceGroup().location]",
+        "properties": {
+            "publicIPAllocationMethod": "Dynamic"
+        }
+    },
+    {"type": "Microsoft.Network/networkInterfaces",
+        "name": "[concat(variables('wapNICName'), copyindex())]",
+        "location": "[resourceGroup().location]",
+        "apiVersion": "2015-06-15",
+        "copy": {
+            "name": "nicLoop",
+            "count": "[parameters('numberofservers')]"
+        },
+      "dependsOn": [
+           "[resourceId('Microsoft.Network/publicIPAddresses/', concat(variables('wapPublicIPName'), copyindex()))]"
+      ],
+      "properties": {
+        "ipConfigurations": [
+          {
+            "name": "ipconfig1",
+            "properties": {
+              "privateIPAllocationMethod": "Dynamic",
+              "subnet": {
+                "id": "[variables('subnetRef')]"
+                },
+             "publicIPAddress": {
+                "id": "[resourceId('Microsoft.Network/publicIPAddresses', concat(variables('wapPublicIPName'), copyindex()))]"
+              },
+              "loadBalancerBackendAddressPools": [
+
+                ]
+            }
+          }
+        ]
+      }
+    },
+    {"type": "Microsoft.Compute/virtualMachines",
+        "apiVersion": "2015-06-15",
+        "name": "[concat(parameters('wapServerNamingConvention'), copyindex())]",
+        "location": "[resourceGroup().location]",
+        "copy": {
+            "name": "virtualMachineLoop",
+            "count": "[parameters('numberofservers')]"
+        },
+        "dependsOn": [
+			"[resourceId('Microsoft.Storage/storageAccounts',concat(variables('wapStorageAccountName'),copyindex()))]",
+            "[resourceId('Microsoft.Network/networkInterfaces/', concat(variables('wapNICName'), copyindex()))]",
+            "[resourceId('Microsoft.Compute/availabilitySets', variables('wapAvailabilitySetName'))]"
+        ],
+        "properties": {
+         "availabilitySet": {
+                "id": "[resourceId('Microsoft.Compute/availabilitySets', variables('wapAvailabilitySetName'))]"
+            },
+        "hardwareProfile": {
+          "vmSize": "[parameters('wapVMSize')]"
+        },
+        "osProfile": {
+		    "computerName": "[concat(parameters('wapServerNamingConvention'), copyindex())]",
+            "adminUsername": "[parameters('vmAdminUsername')]",
+            "adminPassword": "[parameters('vmAdminPassword')]"
+        },
+        "storageProfile": {
+          "imageReference": {
+            "publisher": "[parameters('imagePublisher')]",
+            "offer": "[parameters('imageOffer')]",
+            "sku": "[parameters('imageSKU')]",
+            "version": "latest"
+          },
+          "osDisk": {
+            "name": "osdisk",
+            "vhd": {
+                "uri": "[concat('https://', variables('wapStorageAccountName'), copyindex(), '.blob.core.windows.net/vhds/', parameters('wapServerNamingConvention'),copyIndex(),'.vhd')]"
+            },
+            "caching": "ReadWrite",
+            "createOption": "FromImage"
+          }
+        },
+        "networkProfile": {
+          "networkInterfaces": [
+            {
+              "id": "[resourceId('Microsoft.Network/networkInterfaces/', concat(variables('wapNICName'), copyindex()))]"
+            }
+          ]
+        }
+      }
+    }
+  ]
+}
