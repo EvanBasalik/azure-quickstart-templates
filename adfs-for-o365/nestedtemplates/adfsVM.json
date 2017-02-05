@@ -163,18 +163,10 @@
         "description": "IP address for the ADFS load balancer"
       },
       "defaultValue": "10.0.0.200"
-    },
-    "assetLocation": {
-      "type": "string",
-      "metadata": {
-        "description": "The location of resources such as templates and DSC modules that the script is dependent"
-      },
-      "defaultValue": "https://raw.githubusercontent.com/EvanBasalik/azure-quickstart-templates/master/adfs-for-o365"
     }
   },
   "variables": {
     "adfsStorageAccountName":"[concat('adfs',uniqueString(resourceGroup().id))]",
-    "adfsVMName": "[parameters('adfsServerNamingConvention')]",
     "adfsILBName": "adfs-ILB",
     "adfsILBFEName": "[concat(variables('adfsILBName'),'FE')]",
     "adfsILBBEName": "[concat(variables('adfsILBName'),'BE')]",
@@ -183,13 +175,19 @@
     "adfsILBBEAddressPoolID": "[concat(variables('adfsILBID'),'/backendAddressPools/',variables('adfsILBBEName'))]",
     "adfsILBIPAddressName": "adfs-ILBIP",
     "adfsILBProbesIDBase": "[concat(variables('adfsILBID'),'/Probes/')]",
+    "adfsELBName": "adfsELB",
+    "adfsELBFEName": "[concat(variables('adfsELBName'),'FE')]",
+    "adfsELBBEName": "[concat(variables('adfsELBName'),'BE')]",
+    "adfsELBID": "[resourceId('Microsoft.Network/loadBalancers',variables('adfsELBName'))]",
+    "adfsELBFEConfigID": "[concat(variables('adfsELBID'),'/frontendIPConfigurations/',variables('adfsELBFEName'))]",
+    "adfsELBBEAddressPoolID": "[concat(variables('adfsELBID'),'/backendAddressPools/',variables('adfsELBBEName'))]",
+    "adfsELBProbesIDBase": "[concat(variables('adfsELBID'),'/Probes/')]",
+    "adfsELBIPAddressName": "adfs-ELBIP",
     "adfsAvailabilitySetName": "adfs-availabilityset",
     "adfsNICName": "adfs-NIC",
     "vnetID": "[resourceId(parameters('existingVirtualNetworkResourceGroup'), 'Microsoft.Network/virtualNetworks', parameters('existingVirtualNetworkName'))]",
     "subnetRef": "[concat(variables('vnetID'),'/subnets/', parameters('existingSubnetName'))]",
-    "adfsPublicIPName": "adfs-publicIP",
-    "adfsModulesURL": "[concat(parameters('assetLocation'),'/DSC/ConfigureADFS.ps1.zip')]",
-    "adfsConfigurationFunction": "ConfigureADFS.ps1\\ConfigureADFS"
+    "adfsPublicIPName": "adfs-publicIP"
   },
   "resources": [
    {"type": "Microsoft.Compute/availabilitySets",
@@ -232,8 +230,7 @@
             "count": "[parameters('numberofservers')]"
         },
       "dependsOn": [
-           "[resourceId('Microsoft.Network/publicIPAddresses/', concat(variables('adfsPublicIPName'), copyindex()))]",
-           "[resourceId('Microsoft.Network/loadBalancers/',variables('adfsILBName'))]"
+           "[resourceId('Microsoft.Network/publicIPAddresses/', concat(variables('adfsPublicIPName'), copyindex()))]"
       ],
       "properties": {
         "ipConfigurations": [
@@ -246,12 +243,7 @@
                 },
              "publicIPAddress": {
                 "id": "[resourceId('Microsoft.Network/publicIPAddresses', concat(variables('adfsPublicIPName'), copyindex()))]"
-              },
-              "loadBalancerBackendAddressPools": [
-                    {
-                        "id": "[concat(resourceId('Microsoft.Network/loadBalancers', variables('adfsILBName')), concat('/backendAddressPools/',variables('adfsILBBEName')))]"
-                    }
-                ]
+              }
             }
           }
         ]
@@ -305,33 +297,7 @@
             }
           ]
         }
-      },
-      "resources": [
-        {
-          "name": "[concat(parameters('adfsServerNamingConvention'), copyindex(),'/ConfigureADFS')]",
-          "type": "Microsoft.Compute/virtualMachines/extensions",
-          "apiVersion": "2016-03-30",
-          "location": "[resourceGroup().location]",
-          "dependsOn": [
-            "[resourceId('Microsoft.Compute/virtualMachines', concat(parameters('adfsServerNamingConvention'), copyindex()))]"
-          ],
-          "properties": {
-            "publisher": "Microsoft.Powershell",
-            "type": "DSC",
-            "typeHandlerVersion": "2.21",
-            "autoUpgradeMinorVersion": true,
-            "settings": {
-              "ModulesUrl": "[variables('adfsModulesURL')]",
-              "ConfigurationFunction": "[variables('adPDCConfigurationFunction')]"
-            },
-            "protectedSettings": {
-              "Items": {
-                "AdminPassword": "[parameters('adminPassword')]"
-              }
-            }
-          }
-        }
-      ]    
+      }
     },
     {
     "type": "Microsoft.Network/loadBalancers",
@@ -356,38 +322,11 @@
             }
         ],
         "loadBalancingRules": [
-            {
-                "name": "adfs-ILB-balancingrule-443",
-                "properties": {
-                    "frontendIPConfiguration": {
-                        "id": "[variables('adfsILBFEConfigID')]"
-                    },
-                    "frontendPort": 443,
-                    "backendPort": 443,
-                    "enableFloatingIP": false,
-                    "idleTimeoutInMinutes": 4,
-                    "protocol": "Tcp",
-                    "loadDistribution": "Default",
-                    "backendAddressPool": {
-                        "id": "[variables('adfsILBBEAddressPoolID')]"
-                    },
-                    "probe": {
-                        "id": "[concat(variables('adfsILBProbesIDBase'),'adfs-ILB-probe-443')]"
-                    }
-                }
-            }
+            
+
         ],
         "probes": [
-            {
-                "name": "[concat(variables('adfsILBIPAddressName'),'-probe443')]",
-                "properties": {
-                    "protocol": "Http",
-                    "port": 443,
-                    "requestPath": "/",
-                    "intervalInSeconds": 5,
-                    "numberOfProbes": 2
-                }
-            }
+
         ],
         "inboundNatRules": [],
         "outboundNatRules": [],

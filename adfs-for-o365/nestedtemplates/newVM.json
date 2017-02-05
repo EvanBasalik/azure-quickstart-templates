@@ -299,17 +299,6 @@
         }
       }
     },
-    {"type": "Microsoft.Network/publicIPAddresses",
-        "name": "[variables('adfsELBIPAddressName')]",
-        "apiVersion": "2016-03-30",
-        "location": "[resourceGroup().location]",
-        "properties": {
-            "publicIPAllocationMethod": "Dynamic",
-            "idleTimeoutInMinutes": 4
-        },
-        "resources": [],
-        "dependsOn": []
-    },
     {
     "type": "Microsoft.Network/loadBalancers",
     "name": "[variables('adfsILBName')]",
@@ -320,7 +309,7 @@
             {
                 "name": "[variables('adfsILBFEName')]",
                 "properties": {
-                    "privateIPAllocationMethod": "Dynamic",
+                    "privateIPAllocationMethod": "Static",
                     "subnet": {
                         "id": "[variables('subnetRef')]"
                     }
