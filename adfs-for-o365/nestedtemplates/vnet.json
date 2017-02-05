@@ -45,6 +45,12 @@
       "defaultValue": "10.0.1.0/29"
     }
   },
+  "variables": {
+    "internalSubnetNSGName":"[concat(parameters('internalsubnetName'),'-nsg')]",
+    "dmzSubnetNSGName": "[concat(parameters('dmzsubnetName'),'-nsg')]",
+    "internalSubnetNSGResourceID": "[resourceId(resourceGroup().name, 'Microsoft.Network/NetworkSecurityGroups', variables('internalSubnetNSGName'))]",
+    "dmzSubnetNSGResourceID":  "[resourceId(resourceGroup().name, 'Microsoft.Network/NetworkSecurityGroups', variables('dmzSubnetNSGName'))]"
+  },
   "resources": [
     {"name": "[parameters('virtualNetworkName')]",
       "type": "Microsoft.Network/virtualNetworks",
@@ -60,105 +66,24 @@
           {
             "name": "[parameters('internalsubnetName')]",
             "properties": {
-              "addressPrefix": "[parameters('internalsubnetRange')]"
+              "addressPrefix": "[parameters('internalsubnetRange')]",
+              "networkSecurityGroup": {
+                    "id": "[variables('internalSubnetNSGResourceID')]"
+                }
             }
           },
                     {
             "name": "[parameters('dmzsubnetName')]",
             "properties": {
-              "addressPrefix": "[parameters('dmzsubnetRange')]"
+              "addressPrefix": "[parameters('dmzsubnetRange')]",
+              "networkSecurityGroup": {
+                  "id": "[variables('dmzSubnetNSGResourceID')]"
+              }
             }
           }
         ]
-      }
-    },
-    {
-      "type": "Microsoft.Network/networkSecurityGroups",
-      "name": "[concat(parameters('internalsubnetName'),'nsg')]",
-      "apiVersion": "2016-03-30",
-      "location": "[resourceGroup().location]",
-      "properties": {
-          "securityRules": [
-              {
-                  "name": "AllowHTTPSfromDMZ",
-                  "properties": {
-                      "protocol": "TCP",
-                      "sourcePortRange": "*",
-                      "destinationPortRange": "443",
-                      "sourceAddressPrefix": "10.1.0.0/30",
-                      "destinationAddressPrefix": "*",
-                      "access": "Allow",
-                      "priority": 1000,
-                      "direction": "Inbound"
-                  }
-              },
-              {
-                  "name": "DenyInternetOutbound",
-                  "properties": {
-                      "protocol": "*",
-                      "sourcePortRange": "*",
-                      "destinationPortRange": "*",
-                      "sourceAddressPrefix": "*",
-                      "destinationAddressPrefix": "Internet",
-                      "access": "Deny",
-                      "priority": 1100,
-                      "direction": "Outbound"
-                  }
-              }
-          ]
       },
-      "resources": [],
-      "dependsOn": []
-    },
-       {
-      "type": "Microsoft.Network/networkSecurityGroups",
-      "name": "[concat(parameters('dmzsubnetName'),'nsg')]",
-      "apiVersion": "2016-03-30",
-      "location": "[resourceGroup().location]",
-      "properties": {
-          "securityRules": [
-              {
-                  "name": "AllowHTTPSfromDMZ",
-                  "properties": {
-                      "protocol": "Tcp",
-                      "sourcePortRange": "*",
-                      "destinationPortRange": "443",
-                      "sourceAddressPrefix": "10.1.0.0/30",
-                      "destinationAddressPrefix": "*",
-                      "access": "Allow",
-                      "priority": 1000,
-                      "direction": "Inbound"
-                  }
-              },
-              {
-                  "name": "DenyInternetOutbound",
-                  "properties": {
-                      "protocol": "*",
-                      "sourcePortRange": "*",
-                      "destinationPortRange": "*",
-                      "sourceAddressPrefix": "*",
-                      "destinationAddressPrefix": "Internet",
-                      "access": "Deny",
-                      "priority": 1100,
-                      "direction": "Outbound"
-                  }
-              },
-              {
-                  "name": "AllowHTTPSOutbound",
-                  "properties": {
-                      "protocol": "*",
-                      "sourcePortRange": "*",
-                      "destinationPortRange": "443",
-                      "sourceAddressPrefix": "*",
-                      "destinationAddressPrefix": "Internet",
-                      "access": "Allow",
-                      "priority": 1010,
-                      "direction": "Outbound"
-                  }
-              }
-          ]
-      },
-      "dependsOn": []
+      "resources": []
     }
   ]
 }

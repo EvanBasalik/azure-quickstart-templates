@@ -2,20 +2,35 @@
     "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
     "contentVersion": "1.0.0.0",
     "parameters": {
-        "location": {
-            "type": "string"
-        },
         "dmzSubnetAddressRange": {
-            "type": "string"
+            "type": "string",
+            "metadata": {
+                "Description": "The address range of the subnet for the DMZ"
+            },
+            "defaultValue": "10.0.1.0/29"
+        },
+        "internalSubnetName": {
+            "type": "string",
+            "metadata": {
+                "Description": "The name of the NSG for the internal subnet"
+            },
+            "defaultValue": "internalSubnet"
+        },
+        "dmzSubnetName": {
+            "type": "string",
+            "metadata": {
+                "Description": "The name of the NSG for the DMZ subnet"
+            },
+            "defaultValue": "dmzSubnet"
         }
     },
     "resources": [
         {
             "comments": "Internal NSG",
-            "name": "Internal-sn-nsg",
+            "name": "[concat(parameters('internalSubnetName'),'-nsg')]",
             "apiVersion": "2015-06-15",
             "type": "Microsoft.Network/networkSecurityGroups",
-            "location": "[parameters('location')]",
+            "location": "[resourceGroup().location]",
             "properties": {
                 "securityRules": [
                     {
@@ -75,10 +90,10 @@
         },
         {
             "comments": "DMZ NSG",
-            "name": "DMZ-sn-nsg",
+            "name": "[concat(parameters('dmzSubnetName'),'-nsg')]",
             "apiVersion": "2015-06-15",
             "type": "Microsoft.Network/networkSecurityGroups",
-            "location": "[parameters('location')]",
+            "location": "[resourceGroup().location]",
             "properties": {
                 "securityRules": [
                     {

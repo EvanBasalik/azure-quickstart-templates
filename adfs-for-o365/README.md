@@ -13,7 +13,8 @@ Click the button below to deploy
 
 # Attribution
 
-+   The base of the domain control portion was taken from the excellent HA DC <a href="https://github.com/Azure/azure-quickstart-templates/tree/master/active-directory-new-domain-ha-2-dc" target="_blank">template</a> created by Simon Davies. 
++   The domain controller portion was adapted from the excellent HA DC <a href="https://github.com/Azure/azure-quickstart-templates/tree/master/active-directory-new-domain-ha-2-dc" target="_blank">template</a> created by Simon Davies. 
++   The nsg template was adapted from the ADFS NSG <a href="https://github.com/paulomarquesc/adfs-6vms-regular-template-based"template</a> by paulomarquesc.
 
 # Known Issues
 

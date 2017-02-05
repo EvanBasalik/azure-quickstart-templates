@@ -50,7 +50,7 @@
       },
       "defaultValue": "10.0.0.0/24"
     },
-        "dmzsubnetName": {
+      "dmzsubnetName": {
       "type": "string",
       "metadata": {
         "Description": "The name of the DMZ subnet"
@@ -348,8 +348,8 @@
     "adLBName": "RDPLoadBalancer",
     "PDCRDPNATRuleID": "[concat(variables('adlbID'),'/inboundNatRules/',variables('PDCRDPNAT'))]",
     "BDCRDPNATRuleID": "[concat(variables('adlbID'),'/inboundNatRules/',variables('BDCRDPNAT'))]",
-    "ADFSConfigurationModulesURL": "[concat(parameters('assetLocation'),'/DSC/ConfigureADFS.ps1.zip')]"
-
+    "ADFSConfigurationModulesURL": "[concat(parameters('assetLocation'),'/DSC/ConfigureADFS.ps1.zip')]",
+    "nsgTemplateUri": "[concat(parameters('assetLocation'),'/nestedtemplates/nsgs.json')]"
   },
   "resources": [
     {
@@ -736,7 +736,7 @@
         "[resourceId('Microsoft.Storage/storageAccounts',parameters('newStorageAccountName'))]",
         "[resourceId('Microsoft.Network/networkInterfaces',parameters('BDCNicName'))]",
         "[resourceId('Microsoft.Compute/availabilitySets', variables('dc-AvailabilitySetName'))]",
-        "[resourceId('Microsoft.Network/loadBalancers',variables('adLBName'))]"
+        "[resourceId('Microsoft.Network/loadBalancers',variables('adLBName'))]"        
       ],
       "properties": {
         "hardwareProfile": {
@@ -781,10 +781,7 @@
         "networkProfile": {
           "networkInterfaces": [
             {
-              "id": "[resourceId('Microsoft.Network/networkInterfaces',parameters('BDCNicName'))]",
-              "networkSecurityGroup": {
-                  "id": "[resourceId('Microsoft.Network/networkSecurityGroups', concat(parameters('internalsubnetName'),'-nsg'))]"
-                }   
+              "id": "[resourceId('Microsoft.Network/networkInterfaces',parameters('BDCNicName'))]"
             }
           ]
         }
@@ -889,6 +886,6 @@
           }
         }
       }
-    }  
+    }
   ]
 }
