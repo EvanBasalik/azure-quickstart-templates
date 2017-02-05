@@ -49,6 +49,12 @@
       }
     }
   },
+  "variables": {
+    "internalSubnetNSGName":"[concat(parameters('internalsubnetName'),'-nsg')]",
+    "dmzSubnetNSGName": "[concat(parameters('dmzsubnetName'),'-nsg')]",
+    "internalSubnetNSGResourceID": "[resourceId(resourceGroup().name, 'Microsoft.Network/NetworkSecurityGroups', variables('internalSubnetNSGName'))]",
+    "dmzSubnetNSGResourceID":  "[resourceId(resourceGroup().name, 'Microsoft.Network/NetworkSecurityGroups', variables('dmzSubnetNSGName'))]"
+  },
   "resources": [
     {"name": "[parameters('virtualNetworkName')]",
       "type": "Microsoft.Network/virtualNetworks",
@@ -67,13 +73,19 @@
           {
             "name": "[parameters('internalsubnetName')]",
             "properties": {
-              "addressPrefix": "[parameters('internalsubnetRange')]"
+              "addressPrefix": "[parameters('internalsubnetRange')]",
+              "networkSecurityGroup": {
+                  "id": "[variables('internalSubnetNSGResourceID')]"
+              }
             }
           },
                     {
             "name": "[parameters('dmzsubnetName')]",
             "properties": {
-              "addressPrefix": "[parameters('dmzsubnetRange')]"
+              "addressPrefix": "[parameters('dmzsubnetRange')]",
+              "networkSecurityGroup": {
+                  "id": "[variables('dmzSubnetNSGResourceID')]"
+              }
             }
           }
         ]

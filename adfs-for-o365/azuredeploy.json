@@ -425,6 +425,32 @@
       }
     },
     {
+      "name": "NSGsVNet",
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2016-09-01",
+      "dependsOn": [
+        "[concat('Microsoft.Resources/deployments/',parameters('virtualNetworkName'))]"
+      ],
+      "properties": {
+        "mode": "Incremental",
+        "templateLink": {
+          "uri": "[variables('nsgTemplateUri')]",
+          "contentVersion": "1.0.0.0"
+        },
+        "parameters": {
+          "internalsubnetName": {
+            "value": "[parameters('internalSubnetName')]"
+          },
+           "dmzsubnetName": {
+            "value": "[parameters('dmzSubnetName')]"
+          },
+          "dmzsubnetRange": {
+            "value": "[parameters('dmzSubnetRange')]"
+          }
+        }
+      }
+    },
+    {
       "name": "[variables('adLBName')]",
       "type": "Microsoft.Network/loadBalancers",
       "apiVersion": "2016-10-01",
@@ -482,7 +508,7 @@
       "apiVersion": "2016-10-01",
       "location": "[resourceGroup().location]",
       "dependsOn": [
-        "Microsoft.Resources/deployments/VNet",
+        "[concat('Microsoft.Resources/deployments/',parameters('virtualNetworkName'))]",
         "[concat('Microsoft.Network/loadBalancers/',variables('adLBName'))]"
       ],
       "properties": {
@@ -516,7 +542,7 @@
       "apiVersion": "2016-10-01",
       "location": "[resourceGroup().location]",
       "dependsOn": [
-        "Microsoft.Resources/deployments/VNet",
+        "[concat('Microsoft.Resources/deployments/',parameters('virtualNetworkName'))]",
         "[concat('Microsoft.Network/loadBalancers/',variables('adLBName'))]"
       ],
       "properties": {
